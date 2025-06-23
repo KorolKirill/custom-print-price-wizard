@@ -27,12 +27,12 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">
               PrintCraft Studio
             </h1>
             <div className="text-sm text-gray-600">
@@ -61,9 +61,9 @@ const Index = () => {
               { step: 3, icon: ShoppingCart, label: "Оформление заказа", active: currentStep >= 3 },
               { step: 4, icon: CheckCircle, label: "Готово", active: currentStep >= 4 },
             ].map(({ step, icon: Icon, label, active }) => (
-              <div key={step} className={`flex flex-col items-center ${active ? 'text-purple-600' : 'text-gray-400'}`}>
+              <div key={step} className={`flex flex-col items-center ${active ? 'text-orange-600' : 'text-gray-400'}`}>
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${
-                  active ? 'bg-purple-600 text-white' : 'bg-gray-200'
+                  active ? 'bg-orange-600 text-white' : 'bg-gray-200'
                 }`}>
                   <Icon size={20} />
                 </div>
@@ -110,7 +110,7 @@ const Index = () => {
               <CardContent>
                 <Button 
                   onClick={() => alert('Переход на оплату (пока заглушка)')}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                  className="bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600"
                   size="lg"
                 >
                   Перейти к оплате
@@ -131,8 +131,8 @@ const Index = () => {
             <div className="grid md:grid-cols-3 gap-8">
               <Card className="text-center hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <Upload className="w-6 h-6 text-purple-600" />
+                  <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <Upload className="w-6 h-6 text-orange-600" />
                   </div>
                   <CardTitle>Простая загрузка</CardTitle>
                 </CardHeader>
@@ -146,8 +146,8 @@ const Index = () => {
 
               <Card className="text-center hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <Calculator className="w-6 h-6 text-pink-600" />
+                  <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <Calculator className="w-6 h-6 text-gray-600" />
                   </div>
                   <CardTitle>Точный расчет</CardTitle>
                 </CardHeader>
@@ -161,8 +161,8 @@ const Index = () => {
 
               <Card className="text-center hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle className="w-6 h-6 text-green-600" />
+                  <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle className="w-6 h-6 text-orange-600" />
                   </div>
                   <CardTitle>Высокое качество</CardTitle>
                 </CardHeader>
