@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Calculator, FileText, Palette, Ruler } from "lucide-react";
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Настройка worker для PDF.js
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 interface PriceCalculatorProps {
   files: File[];
@@ -56,7 +59,7 @@ const PriceCalculator = ({ files, onPriceCalculated }: PriceCalculatorProps) => 
 
   // Функция для определения размера файла
   const getFileDimensions = async (file: File): Promise<FileDimensions> => {
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
       if (file.type.startsWith('image/')) {
         const img = new Image();
         img.onload = () => {
@@ -77,8 +80,43 @@ const PriceCalculator = ({ files, onPriceCalculated }: PriceCalculatorProps) => 
           });
         };
         img.src = URL.createObjectURL(file);
+      } else if (file.type === 'application/pdf') {
+        try {
+          // Читаем PDF файл
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          const page = await pdf.getPage(1); // Берем первую страницу
+          const viewport = page.getViewport({ scale: 1.0 });
+          
+          // Конвертируем размеры из points в сантиметры (1 point = 1/72 inch, 1 inch = 2.54 cm)
+          const widthCm = Math.round((viewport.width / 72) * 2.54 * 10) / 10;
+          const heightCm = Math.round((viewport.height / 72) * 2.54 * 10) / 10;
+          
+          console.log(`PDF размеры: ${widthCm}x${heightCm} см`);
+          
+          // Определяем ближайший стандартный размер
+          let detectedSize = "custom";
+          if (widthCm <= 11 && heightCm <= 15) detectedSize = "A6";
+          else if (widthCm <= 15 && heightCm <= 22) detectedSize = "A5";
+          else if (widthCm <= 22 && heightCm <= 30) detectedSize = "A4";
+          else if (widthCm <= 30 && heightCm <= 43) detectedSize = "A3";
+          
+          resolve({
+            width: widthCm,
+            height: heightCm,
+            size: detectedSize
+          });
+        } catch (error) {
+          console.error('Ошибка при чтении PDF:', error);
+          // Fallback для PDF файлов при ошибке
+          resolve({
+            width: 21,
+            height: 29.7,
+            size: "A4"
+          });
+        }
       } else {
-        // Для PDF/PSD файлов используем приблизительные размеры
+        // Для PSD файлов используем приблизительные размеры
         const fileSizeMB = file.size / (1024 * 1024);
         let estimatedSize = "A4";
         if (fileSizeMB < 1) estimatedSize = "A6";
