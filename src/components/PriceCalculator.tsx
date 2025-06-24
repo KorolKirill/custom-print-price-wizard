@@ -8,6 +8,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Calculator, ArrowRight, FileImage, FileText, Image as ImageIcon, Minus, Plus, Info } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import * as pdfjsLib from 'pdfjs-dist';
+import DTFInkCalculator from '@/utils/dtfInkCalculator';
 
 // Настройка worker для PDF.js
 if (typeof window !== 'undefined') {
@@ -40,6 +41,7 @@ interface FileCopy {
     magenta: number;
     yellow: number;
     black: number;
+    white: number;
   };
 }
 
@@ -62,6 +64,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
   const [fileCopies, setFileCopies] = useState<FileCopy[]>([]);
   const [selectedFileIndex, setSelectedFileIndex] = useState<number | null>(null);
   const [previewFileIndex, setPreviewFileIndex] = useState(0);
+  const [dtfCalculator] = useState(new DTFInkCalculator());
 
   const generatePreview = async (file: File): Promise<FilePreview> => {
     const fileType = file.type;
@@ -129,6 +132,8 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
       // Ініціалізуємо кількість копій та витрати чорнила для кожного файлу
       const initialFileCopies = files.map(file => {
         const fileSize = getFileDimensions(file);
+        const inkUsage = dtfCalculator.calculateAverageInkUsage(fileSize.width, fileSize.height);
+        
         return {
           file,
           copies: 1,
@@ -138,10 +143,11 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
           sizeType: 'file' as const,
           standardSize: 'file',
           inkConsumption: {
-            cyan: Math.floor(Math.random() * 20) + 5,
-            magenta: Math.floor(Math.random() * 20) + 5,
-            yellow: Math.floor(Math.random() * 20) + 5,
-            black: Math.floor(Math.random() * 20) + 5,
+            cyan: inkUsage.cyan,
+            magenta: inkUsage.magenta,
+            yellow: inkUsage.yellow,
+            black: inkUsage.black,
+            white: inkUsage.white,
           }
         };
       });
@@ -149,7 +155,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
       setSelectedFileIndex(0);
       setPreviewFileIndex(0);
     }
-  }, [files]);
+  }, [files, dtfCalculator]);
 
   // Функція для отримання розмірів файлу (заглушка)
   const getFileDimensions = (file: File) => {
@@ -211,32 +217,37 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
     if (!selectedSize) return;
 
     setFileCopies(prev => 
-      prev.map((fc, index) => 
-        index === fileIndex ? { 
-          ...fc, 
-          standardSize: sizeValue,
-          sizeType: sizeValue === 'file' ? 'file' : 'standard',
-          width: sizeValue === 'file' ? getFileDimensions(fc.file).width : selectedSize.width,
-          height: sizeValue === 'file' ? getFileDimensions(fc.file).height : selectedSize.height
-        } : fc
-      )
-    );
-  };
-
-  const updateInkConsumption = (fileIndex: number, color: keyof FileCopy['inkConsumption'], value: number) => {
-    setFileCopies(prev => 
-      prev.map((fc, index) => 
-        index === fileIndex ? { 
-          ...fc, 
-          inkConsumption: { ...fc.inkConsumption, [color]: Math.max(0, value) }
-        } : fc
-      )
+      prev.map((fc, index) => {
+        if (index === fileIndex) {
+          const newWidth = sizeValue === 'file' ? getFileDimensions(fc.file).width : selectedSize.width;
+          const newHeight = sizeValue === 'file' ? getFileDimensions(fc.file).height : selectedSize.height;
+          
+          // Пересчитываем расход чернил для нового размера
+          const newInkUsage = dtfCalculator.calculateAverageInkUsage(newWidth, newHeight);
+          
+          return { 
+            ...fc, 
+            standardSize: sizeValue,
+            sizeType: sizeValue === 'file' ? 'file' : 'standard',
+            width: newWidth,
+            height: newHeight,
+            inkConsumption: {
+              cyan: newInkUsage.cyan,
+              magenta: newInkUsage.magenta,
+              yellow: newInkUsage.yellow,
+              black: newInkUsage.black,
+              white: newInkUsage.white,
+            }
+          };
+        }
+        return fc;
+      })
     );
   };
 
   const getTotalInkConsumption = () => {
     return fileCopies.reduce((total, fc) => {
-      const fileTotal = (fc.inkConsumption.cyan + fc.inkConsumption.magenta + fc.inkConsumption.yellow + fc.inkConsumption.black) * fc.copies;
+      const fileTotal = (fc.inkConsumption.cyan + fc.inkConsumption.magenta + fc.inkConsumption.yellow + fc.inkConsumption.black + fc.inkConsumption.white) * fc.copies;
       return total + fileTotal;
     }, 0);
   };
@@ -255,10 +266,16 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
   };
 
   const getInkCost = () => {
-    const totalInkML = getTotalInkConsumption();
-    const inkPricePerLiter = 3780; // грн за 1 л
-    const inkPricePerML = inkPricePerLiter / 1000; // грн за 1 мл
-    return totalInkML * inkPricePerML;
+    return fileCopies.reduce((total, fc) => {
+      const inkUsage = {
+        cyan: fc.inkConsumption.cyan * fc.copies,
+        magenta: fc.inkConsumption.magenta * fc.copies,
+        yellow: fc.inkConsumption.yellow * fc.copies,
+        black: fc.inkConsumption.black * fc.copies,
+        white: fc.inkConsumption.white * fc.copies,
+      };
+      return total + dtfCalculator.calculateInkCost(inkUsage);
+    }, 0);
   };
 
   const getFilmCost = () => {
@@ -267,11 +284,6 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
       return lengthInMeters * 35; // 35 грн за 1 метр
     }
     return 0; // для одного виробу пленка не рахується
-  };
-
-  const getOrderProcessingCost = () => {
-    const totalCopies = fileCopies.reduce((sum, fc) => sum + fc.copies, 0);
-    return totalCopies * 50; // 50 грн за кожну копію
   };
 
   const getEquipmentCost = () => {
@@ -404,7 +416,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                           <div className="text-right">
                             <p className="text-sm text-gray-600">Копій: {fileCopies[index].copies}</p>
                             <p className="text-xs text-blue-600">
-                              {((fileCopies[index].inkConsumption.cyan + fileCopies[index].inkConsumption.magenta + fileCopies[index].inkConsumption.yellow + fileCopies[index].inkConsumption.black) * fileCopies[index].copies).toFixed(1)} мл
+                              {((fileCopies[index].inkConsumption.cyan + fileCopies[index].inkConsumption.magenta + fileCopies[index].inkConsumption.yellow + fileCopies[index].inkConsumption.black + fileCopies[index].inkConsumption.white) * fileCopies[index].copies).toFixed(1)} мл
                             </p>
                           </div>
                         )}
@@ -619,12 +631,14 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                       <div className="flex flex-col items-center">
                         <div 
                           className="w-8 bg-gray-300 border border-gray-400 rounded-t"
-                          style={{ height: `${Math.max(8, 80 * 0.15)}px` }}
+                          style={{ 
+                            height: `${Math.max(8, (fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.white * fc.copies, 0) / getTotalInkConsumption()) * 56)}px` 
+                          }}
                         ></div>
                         <div className="text-xs text-center mt-1">
                           <div className="font-medium">Білий</div>
                           <div className="text-gray-600">
-                            {(getTotalInkConsumption() * 0.15).toFixed(1)} мл
+                            {fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.white * fc.copies, 0).toFixed(1)} мл
                           </div>
                         </div>
                       </div>
@@ -649,34 +663,32 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700 flex items-center gap-2">
                     Загальна довжина:
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-5 w-5 p-0 text-gray-500 hover:text-gray-700">
-                            <Info className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent className="w-80">
-                          <div className="space-y-2">
-                            <h4 className="font-medium">Знижки за довжиною:</h4>
-                            <div className="text-sm space-y-1">
-                              <div className="flex justify-between">
-                                <span>До 5 метрів:</span>
-                                <span className="text-gray-600">Базова ціна</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span>5-10 метрів:</span>
-                                <span className="text-green-600">-5%</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span>Понад 10 метрів:</span>
-                                <span className="text-green-600">-10%</span>
-                              </div>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-5 w-5 p-0 text-gray-500 hover:text-gray-700">
+                          <Info className="h-4 w-4" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80">
+                        <div className="space-y-2">
+                          <h4 className="font-medium">Знижки за довжиною:</h4>
+                          <div className="text-sm space-y-1">
+                            <div className="flex justify-between">
+                              <span>До 5 метрів:</span>
+                              <span className="text-gray-600">Базова ціна</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>5-10 метрів:</span>
+                              <span className="text-green-600">-5%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Понад 10 метрів:</span>
+                              <span className="text-green-600">-10%</span>
                             </div>
                           </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   </span>
                   <span className="font-semibold">
                     {getTotalLength().toFixed(1)} см ({(getTotalLength() / 100).toFixed(2)} м)
@@ -712,7 +724,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                               <span>{getInkCost().toFixed(0)} ₴</span>
                             </div>
                             <div className="text-xs text-gray-500 mb-2">
-                              Формула: {getTotalInkConsumption().toFixed(1)} мл × {(3780/1000).toFixed(2)} ₴/мл
+                              Розраховано з використанням DTF калькулятора
                             </div>
                             {printType === "roll" && (
                               <>
