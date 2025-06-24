@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -351,7 +352,62 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
             </div>
           </div>
 
-          {/* DTF настройки и расход краски - на всю ширину */}
+          {/* Настройки файла - отдельный блок для режима рулона */}
+          {printType === "roll" && fileCopies.length > 0 && selectedFileIndex !== null && (
+            <Card className="bg-gray-50 border-gray-200 mt-8">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg text-gray-800">
+                  Настройки файла: {files[selectedFileIndex].name}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Количество копий */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Количество копий
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => updateCopies(selectedFileIndex, fileCopies[selectedFileIndex].copies - 1)}
+                        disabled={fileCopies[selectedFileIndex].copies <= 1}
+                      >
+                        <Minus className="w-4 h-4" />
+                      </Button>
+                      <Input
+                        type="number"
+                        min="1"
+                        value={fileCopies[selectedFileIndex].copies}
+                        onChange={(e) => updateCopies(selectedFileIndex, parseInt(e.target.value) || 1)}
+                        className="w-20 text-center"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => updateCopies(selectedFileIndex, fileCopies[selectedFileIndex].copies + 1)}
+                      >
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Размер файла */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Размер файла
+                    </label>
+                    <div className="text-lg font-semibold text-gray-800">
+                      {(Math.random() * 20 + 10).toFixed(1)} × {(Math.random() * 15 + 8).toFixed(1)} см
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* DTF расход краски - отдельный блок */}
           {printType === "roll" && fileCopies.length > 0 && selectedFileIndex !== null && (
             <Card className="bg-blue-50 border-blue-200 mt-8">
               <CardHeader className="pb-4">
@@ -360,57 +416,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Настройки файла - наверху */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-4">
-                      Настройки файла: {files[selectedFileIndex].name}
-                    </h4>
-                    
-                    <div className="space-y-4">
-                      {/* Количество копий */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Количество копий
-                        </label>
-                        <div className="flex items-center gap-3">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => updateCopies(selectedFileIndex, fileCopies[selectedFileIndex].copies - 1)}
-                            disabled={fileCopies[selectedFileIndex].copies <= 1}
-                          >
-                            <Minus className="w-4 h-4" />
-                          </Button>
-                          <Input
-                            type="number"
-                            min="1"
-                            value={fileCopies[selectedFileIndex].copies}
-                            onChange={(e) => updateCopies(selectedFileIndex, parseInt(e.target.value) || 1)}
-                            className="w-20 text-center"
-                          />
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => updateCopies(selectedFileIndex, fileCopies[selectedFileIndex].copies + 1)}
-                          >
-                            <Plus className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      {/* Размер файла */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Размер файла
-                        </label>
-                        <div className="text-lg font-semibold text-gray-800">
-                          {(Math.random() * 20 + 10).toFixed(1)} × {(Math.random() * 15 + 8).toFixed(1)} см
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Общий расход:</div>
                     <div className="text-2xl font-bold text-blue-900">
