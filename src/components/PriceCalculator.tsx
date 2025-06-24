@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Calculator, ArrowRight, FileImage, FileText, Image as ImageIcon, Minus, Plus, Info } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import * as pdfjsLib from 'pdfjs-dist';
@@ -140,7 +141,6 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
             cyan: Math.floor(Math.random() * 20) + 5,
             magenta: Math.floor(Math.random() * 20) + 5,
             yellow: Math.floor(Math.random() * 20) + 5,
-            black: Math.floor(Math.random() * 20) + 5,
           }
         };
       });
@@ -521,10 +521,6 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                     <div className="text-2xl font-bold text-blue-900">
                       {getTotalInkConsumption().toFixed(1)} мл
                     </div>
-                    <div className="text-sm text-gray-600 mt-2">Вартість фарби:</div>
-                    <div className="text-xl font-semibold text-blue-700">
-                      {Math.round(getTotalInkConsumption() * 1.8)} ₴
-                    </div>
                   </div>
                   
                   <div>
@@ -670,15 +666,32 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                   💰 Знижка {getDiscountPercentage()}% за довжину
                 </div>
               )}
-              <div className="flex justify-between items-center pt-2 border-t">
-                <span className="text-gray-700 font-medium">Загальні витрати чорнил:</span>
-                <span className="font-bold text-blue-600">
-                  {getTotalInkConsumption().toFixed(1)} мл
-                </span>
-              </div>
               <div className="border-t pt-3 mt-3">
                 <div className="flex justify-between items-center text-xl">
-                  <span className="font-bold">Підсумок:</span>
+                  <span className="font-bold flex items-center gap-2">
+                    Підсумок:
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-5 w-5 p-0 text-gray-500 hover:text-gray-700">
+                            <Info className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <div className="space-y-2 text-sm">
+                            <h4 className="font-medium">Як розраховується ціна:</h4>
+                            <div className="space-y-1">
+                              <div>• Базова ціна друку</div>
+                              <div>• Вартість витрачених чорнил</div>
+                              <div>• Кількість копій</div>
+                              <div>• Розмір друку</div>
+                              <div>• Знижки за об'ємом (для рулону)</div>
+                            </div>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </span>
                   <span className="font-bold text-orange-600">
                     {totalPrice > 0 ? `${totalPrice} ₴` : 'Розраховується...'}
                   </span>
