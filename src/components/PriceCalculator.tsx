@@ -8,7 +8,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Calculator, ArrowRight, FileImage, FileText, Image as ImageIcon, Minus, Plus, Info } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import * as pdfjsLib from 'pdfjs-dist';
-import DTFInkCalculator from '@/utils/dtfInkCalculator';
+import DTFInkCalculator, { ColorAnalysis, InkUsage } from '@/utils/dtfInkCalculator';
+import { FileAnalyzer, FileAnalysisResult } from '@/utils/fileAnalyzer';
 
 // Настройка worker для PDF.js
 if (typeof window !== 'undefined') {
@@ -43,6 +44,7 @@ interface FileCopy {
     black: number;
     white: number;
   };
+  analysisResult?: FileAnalysisResult; // Результат анализа файла
 }
 
 // Стандартні розміри для друку одного виробу
@@ -65,6 +67,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
   const [selectedFileIndex, setSelectedFileIndex] = useState<number | null>(null);
   const [previewFileIndex, setPreviewFileIndex] = useState(0);
   const [dtfCalculator] = useState(new DTFInkCalculator());
+  const [isAnalyzing, setIsAnalyzing] = useState(true);
 
   const generatePreview = async (file: File): Promise<FilePreview> => {
     const fileType = file.type;
@@ -121,39 +124,87 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
   useEffect(() => {
     const loadPreviews = async () => {
       setIsLoading(true);
+      setIsAnalyzing(true);
+      
       const previewPromises = files.map(generatePreview);
       const loadedPreviews = await Promise.all(previewPromises);
       setPreviews(loadedPreviews);
+      
+      // Анализируем файлы для получения реальных размеров и расхода чернил
+      const analyzePromises = files.map(async (file) => {
+        try {
+          const analysisResult = await FileAnalyzer.analyzeFile(file);
+          
+          let inkUsage: InkUsage;
+          
+          if (analysisResult.hasImageData && analysisResult.imageData) {
+            // Используем реальный анализ изображения
+            const colors = dtfCalculator.analyzeImageColors(
+              analysisResult.imageData,
+              analysisResult.dimensions.pixelWidth || 800,
+              analysisResult.dimensions.pixelHeight || 600
+            );
+            
+            const areaM2 = (analysisResult.dimensions.width * analysisResult.dimensions.height) / 10000;
+            inkUsage = dtfCalculator.calculateInkUsageForArea(colors, areaM2);
+          } else {
+            // Используем средние значения
+            inkUsage = dtfCalculator.calculateAverageInkUsage(
+              analysisResult.dimensions.width,
+              analysisResult.dimensions.height
+            );
+          }
+          
+          return {
+            file,
+            copies: 1,
+            length: Math.random() * 22 + 8, // Для рулону
+            width: analysisResult.dimensions.width,
+            height: analysisResult.dimensions.height,
+            sizeType: 'file' as const,
+            standardSize: 'file',
+            inkConsumption: {
+              cyan: inkUsage.cyan,
+              magenta: inkUsage.magenta,
+              yellow: inkUsage.yellow,
+              black: inkUsage.black,
+              white: inkUsage.white,
+            },
+            analysisResult
+          };
+        } catch (error) {
+          console.error('Ошибка анализа файла:', file.name, error);
+          // Fallback при ошибке анализа
+          const inkUsage = dtfCalculator.calculateAverageInkUsage(10, 10);
+          return {
+            file,
+            copies: 1,
+            length: Math.random() * 22 + 8,
+            width: 10,
+            height: 10,
+            sizeType: 'file' as const,
+            standardSize: 'file',
+            inkConsumption: {
+              cyan: inkUsage.cyan,
+              magenta: inkUsage.magenta,
+              yellow: inkUsage.yellow,
+              black: inkUsage.black,
+              white: inkUsage.white,
+            }
+          };
+        }
+      });
+      
+      const initialFileCopies = await Promise.all(analyzePromises);
+      setFileCopies(initialFileCopies);
+      setSelectedFileIndex(0);
+      setPreviewFileIndex(0);
       setIsLoading(false);
+      setIsAnalyzing(false);
     };
 
     if (files.length > 0) {
       loadPreviews();
-      // Ініціалізуємо кількість копій та витрати чорнила для кожного файлу
-      const initialFileCopies = files.map(file => {
-        const fileSize = getFileDimensions(file);
-        const inkUsage = dtfCalculator.calculateAverageInkUsage(fileSize.width, fileSize.height);
-        
-        return {
-          file,
-          copies: 1,
-          length: Math.random() * 22 + 8, // Для рулону
-          width: fileSize.width,
-          height: fileSize.height,
-          sizeType: 'file' as const,
-          standardSize: 'file',
-          inkConsumption: {
-            cyan: inkUsage.cyan,
-            magenta: inkUsage.magenta,
-            yellow: inkUsage.yellow,
-            black: inkUsage.black,
-            white: inkUsage.white,
-          }
-        };
-      });
-      setFileCopies(initialFileCopies);
-      setSelectedFileIndex(0);
-      setPreviewFileIndex(0);
     }
   }, [files, dtfCalculator]);
 
@@ -219,11 +270,27 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
     setFileCopies(prev => 
       prev.map((fc, index) => {
         if (index === fileIndex) {
-          const newWidth = sizeValue === 'file' ? getFileDimensions(fc.file).width : selectedSize.width;
-          const newHeight = sizeValue === 'file' ? getFileDimensions(fc.file).height : selectedSize.height;
+          const newWidth = sizeValue === 'file' ? 
+            (fc.analysisResult?.dimensions.width || 10) : selectedSize.width;
+          const newHeight = sizeValue === 'file' ? 
+            (fc.analysisResult?.dimensions.height || 10) : selectedSize.height;
           
           // Пересчитываем расход чернил для нового размера
-          const newInkUsage = dtfCalculator.calculateAverageInkUsage(newWidth, newHeight);
+          let newInkUsage: InkUsage;
+          
+          if (sizeValue === 'file' && fc.analysisResult?.hasImageData && fc.analysisResult.imageData) {
+            // Используем реальный анализ изображения с новыми размерами
+            const colors = dtfCalculator.analyzeImageColors(
+              fc.analysisResult.imageData,
+              fc.analysisResult.dimensions.pixelWidth || 800,
+              fc.analysisResult.dimensions.pixelHeight || 600
+            );
+            const areaM2 = (newWidth * newHeight) / 10000;
+            newInkUsage = dtfCalculator.calculateInkUsageForArea(colors, areaM2);
+          } else {
+            // Используем средние значения
+            newInkUsage = dtfCalculator.calculateAverageInkUsage(newWidth, newHeight);
+          }
           
           return { 
             ...fc, 
@@ -374,6 +441,11 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
           </CardTitle>
           <CardDescription>
             {printType === "roll" ? "Друк у рулоні" : "Друк одного виробу"} • {files.length} файл{files.length > 1 ? (files.length < 5 ? 'и' : 'ів') : ''}
+            {isAnalyzing && (
+              <span className="ml-2 text-orange-600">
+                • Аналізуємо файли...
+              </span>
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -409,6 +481,11 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                             <p className="font-medium">{file.name}</p>
                             <p className="text-sm text-gray-500">
                               {(file.size / 1024 / 1024).toFixed(2)} MB
+                              {fileCopies[index] && (
+                                <span className="ml-2 text-green-600">
+                                  {fileCopies[index].width.toFixed(1)}×{fileCopies[index].height.toFixed(1)} см
+                                </span>
+                              )}
                             </p>
                           </div>
                         </div>
@@ -511,7 +588,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                     {printType === "roll" ? (
                       <div className="text-lg font-semibold text-gray-800">
                         {fileCopies[selectedFileIndex] && fileCopies[selectedFileIndex].length ? 
-                          `${(Math.random() * 15 + 8).toFixed(1)} × ${fileCopies[selectedFileIndex].length.toFixed(1)} см` : 
+                          `${fileCopies[selectedFileIndex].width.toFixed(1)} × ${fileCopies[selectedFileIndex].length.toFixed(1)} см` : 
                           'Розраховується...'
                         }
                       </div>
@@ -534,6 +611,11 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                         </Select>
                         <div className="text-sm text-gray-600">
                           Поточний розмір: {fileCopies[selectedFileIndex].width.toFixed(1)} × {fileCopies[selectedFileIndex].height.toFixed(1)} см
+                          {fileCopies[selectedFileIndex].analysisResult?.dimensions.dpi && (
+                            <span className="text-xs text-blue-600 ml-2">
+                              ({fileCopies[selectedFileIndex].analysisResult?.dimensions.pixelWidth}×{fileCopies[selectedFileIndex].analysisResult?.dimensions.pixelHeight}px, {fileCopies[selectedFileIndex].analysisResult?.dimensions.dpi} DPI)
+                            </span>
+                          )}
                         </div>
                       </div>
                     )}
@@ -549,6 +631,9 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg text-blue-800 flex items-center gap-2">
                   🎨 Витрати чорнил DTF
+                  {fileCopies[selectedFileIndex]?.analysisResult?.hasImageData && (
+                    <span className="text-sm text-green-600">• Реальний аналіз</span>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -724,7 +809,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                               <span>{getInkCost().toFixed(0)} ₴</span>
                             </div>
                             <div className="text-xs text-gray-500 mb-2">
-                              Розраховано з використанням DTF калькулятора
+                              Розраховано з використанням DTF калькулятора з реальним аналізом файлів
                             </div>
                             {printType === "roll" && (
                               <>

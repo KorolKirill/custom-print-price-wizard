@@ -1,0 +1,196 @@
+
+import * as pdfjsLib from 'pdfjs-dist';
+
+export interface FileDimensions {
+  width: number;  // в см
+  height: number; // в см
+  pixelWidth?: number;
+  pixelHeight?: number;
+  dpi?: number;
+}
+
+export interface FileAnalysisResult {
+  dimensions: FileDimensions;
+  imageData?: Uint8Array;
+  hasImageData: boolean;
+}
+
+/**
+ * Анализирует файл и извлекает размеры и данные изображения
+ */
+export class FileAnalyzer {
+  
+  /**
+   * Получает размеры и данные изображения из файла
+   */
+  public static async analyzeFile(file: File): Promise<FileAnalysisResult> {
+    const fileType = file.type;
+    const fileName = file.name.toLowerCase();
+
+    if (fileType.startsWith('image/')) {
+      return this.analyzeImageFile(file);
+    }
+
+    if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
+      return this.analyzePDFFile(file);
+    }
+
+    if (fileName.endsWith('.psd')) {
+      return this.analyzePSDFile(file);
+    }
+
+    // Fallback для неизвестных форматов
+    return {
+      dimensions: { width: 10, height: 10 },
+      hasImageData: false
+    };
+  }
+
+  /**
+   * Анализ обычных изображений
+   */
+  private static async analyzeImageFile(file: File): Promise<FileAnalysisResult> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          const imageData = ctx.getImageData(0, 0, img.width, img.height);
+          
+          // Предполагаем 300 DPI для расчета размеров в см
+          const dpi = 300;
+          const widthCm = (img.width / dpi) * 2.54;
+          const heightCm = (img.height / dpi) * 2.54;
+
+          resolve({
+            dimensions: {
+              width: Math.round(widthCm * 10) / 10,
+              height: Math.round(heightCm * 10) / 10,
+              pixelWidth: img.width,
+              pixelHeight: img.height,
+              dpi: dpi
+            },
+            imageData: imageData.data,
+            hasImageData: true
+          });
+        } else {
+          reject(new Error('Не удалось создать контекст canvas'));
+        }
+      };
+
+      img.onerror = () => reject(new Error('Не удалось загрузить изображение'));
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  /**
+   * Анализ PDF файлов
+   */
+  private static async analyzePDFFile(file: File): Promise<FileAnalysisResult> {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const page = await pdf.getPage(1);
+      
+      const viewport = page.getViewport({ scale: 1 });
+      
+      // PDF размеры в пунктах (points), конвертируем в см
+      // 1 point = 1/72 inch, 1 inch = 2.54 cm
+      const widthCm = (viewport.width / 72) * 2.54;
+      const heightCm = (viewport.height / 72) * 2.54;
+
+      // Пытаемся получить изображение для анализа цветов
+      let imageData: Uint8Array | undefined;
+      let hasImageData = false;
+
+      try {
+        const scale = 1.5;
+        const scaledViewport = page.getViewport({ scale });
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        
+        if (context) {
+          canvas.height = scaledViewport.height;
+          canvas.width = scaledViewport.width;
+
+          await page.render({
+            canvasContext: context,
+            viewport: scaledViewport,
+          }).promise;
+          
+          const canvasImageData = context.getImageData(0, 0, canvas.width, canvas.height);
+          imageData = canvasImageData.data;
+          hasImageData = true;
+        }
+      } catch (error) {
+        console.warn('Не удалось извлечь изображение из PDF для анализа цветов:', error);
+      }
+
+      return {
+        dimensions: {
+          width: Math.round(widthCm * 10) / 10,
+          height: Math.round(heightCm * 10) / 10,
+          pixelWidth: viewport.width,
+          pixelHeight: viewport.height
+        },
+        imageData,
+        hasImageData
+      };
+    } catch (error) {
+      console.error('Ошибка при анализе PDF:', error);
+      return {
+        dimensions: { width: 21, height: 29.7 }, // A4 по умолчанию
+        hasImageData: false
+      };
+    }
+  }
+
+  /**
+   * Анализ PSD файлов (базовая реализация)
+   */
+  private static async analyzePSDFile(file: File): Promise<FileAnalysisResult> {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const dataView = new DataView(arrayBuffer);
+      
+      // Простое чтение заголовка PSD
+      // PSD формат: signature(4) + version(2) + reserved(6) + channels(2) + height(4) + width(4) + depth(2) + color_mode(2)
+      const signature = new TextDecoder().decode(arrayBuffer.slice(0, 4));
+      
+      if (signature === '8BPS') {
+        const height = dataView.getUint32(14); // offset 14
+        const width = dataView.getUint32(18);  // offset 18
+        
+        // Предполагаем 300 DPI для PSD файлов
+        const dpi = 300;
+        const widthCm = (width / dpi) * 2.54;
+        const heightCm = (height / dpi) * 2.54;
+
+        return {
+          dimensions: {
+            width: Math.round(widthCm * 10) / 10,
+            height: Math.round(heightCm * 10) / 10,
+            pixelWidth: width,
+            pixelHeight: height,
+            dpi: dpi
+          },
+          hasImageData: false // PSD слишком сложен для полного анализа в браузере
+        };
+      }
+    } catch (error) {
+      console.error('Ошибка при анализе PSD:', error);
+    }
+
+    // Fallback для PSD
+    return {
+      dimensions: { width: 15, height: 15 },
+      hasImageData: false
+    };
+  }
+}
