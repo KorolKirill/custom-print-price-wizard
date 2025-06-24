@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -134,7 +135,10 @@ const Index = () => {
               </CardHeader>
               <CardContent>
                 <RadioGroup value={printType} onValueChange={setPrintType} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="flex flex-col space-y-4 border border-gray-200 rounded-lg p-6 hover:bg-gray-50 cursor-pointer">
+                  <div 
+                    className="flex flex-col space-y-4 border border-gray-200 rounded-lg p-6 hover:bg-gray-50 cursor-pointer"
+                    onClick={() => setPrintType("single")}
+                  >
                     <div className="flex items-center space-x-4">
                       <RadioGroupItem value="single" id="single" />
                       <Label htmlFor="single" className="cursor-pointer flex items-center gap-4 flex-1">
@@ -153,7 +157,10 @@ const Index = () => {
                       />
                     </div>
                   </div>
-                  <div className="flex flex-col space-y-4 border border-gray-200 rounded-lg p-6 hover:bg-gray-50 cursor-pointer">
+                  <div 
+                    className="flex flex-col space-y-4 border border-gray-200 rounded-lg p-6 hover:bg-gray-50 cursor-pointer"
+                    onClick={() => setPrintType("roll")}
+                  >
                     <div className="flex items-center space-x-4">
                       <RadioGroupItem value="roll" id="roll" />
                       <Label htmlFor="roll" className="cursor-pointer flex items-center gap-4 flex-1">
