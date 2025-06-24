@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calculator, ArrowRight, FileImage, FileText, Image as ImageIcon, Minus, Plus, Info } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -29,6 +30,10 @@ interface FileCopy {
   file: File;
   copies: number;
   length: number; // Фіксована довжина для кожного файлу
+  width: number; // Ширина для одного виробу
+  height: number; // Висота для одного виробу
+  sizeType: 'standard' | 'file'; // Тип розміру: стандартний або з файлу
+  standardSize: string; // Вибраний стандартний розмір
   inkConsumption: {
     cyan: number;
     magenta: number;
@@ -36,6 +41,18 @@ interface FileCopy {
     black: number;
   };
 }
+
+// Стандартні розміри для друку одного виробу
+const STANDARD_SIZES = [
+  { label: '5×5 см', value: '5x5', width: 5, height: 5 },
+  { label: '7×7 см', value: '7x7', width: 7, height: 7 },
+  { label: '10×10 см', value: '10x10', width: 10, height: 10 },
+  { label: '10×15 см', value: '10x15', width: 10, height: 15 },
+  { label: 'A5 (14.8×21 см)', value: 'a5', width: 14.8, height: 21 },
+  { label: 'A4 (21×29.7 см)', value: 'a4', width: 21, height: 29.7 },
+  { label: 'A3 (29.7×42 см)', value: 'a3', width: 29.7, height: 42 },
+  { label: 'Розмір файлу', value: 'file', width: 0, height: 0 },
+];
 
 const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculatorProps) => {
   const [previews, setPreviews] = useState<FilePreview[]>([]);
@@ -109,24 +126,39 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
     if (files.length > 0) {
       loadPreviews();
       // Ініціалізуємо кількість копій та витрати чорнила для кожного файлу
-      const initialFileCopies = files.map(file => ({
-        file,
-        copies: 1,
-        length: Math.random() * 22 + 8, // Генеруємо фіксовану довжину один раз
-        inkConsumption: {
-          cyan: Math.floor(Math.random() * 20) + 5,
-          magenta: Math.floor(Math.random() * 20) + 5,
-          yellow: Math.floor(Math.random() * 20) + 5,
-          black: Math.floor(Math.random() * 20) + 5,
-        }
-      }));
+      const initialFileCopies = files.map(file => {
+        const fileSize = getFileDimensions(file);
+        return {
+          file,
+          copies: 1,
+          length: Math.random() * 22 + 8, // Для рулону
+          width: fileSize.width,
+          height: fileSize.height,
+          sizeType: 'file' as const,
+          standardSize: 'file',
+          inkConsumption: {
+            cyan: Math.floor(Math.random() * 20) + 5,
+            magenta: Math.floor(Math.random() * 20) + 5,
+            yellow: Math.floor(Math.random() * 20) + 5,
+            black: Math.floor(Math.random() * 20) + 5,
+          }
+        };
+      });
       setFileCopies(initialFileCopies);
-      // Вибираємо перший файл за замовчуванням для будь-якого режиму
       setSelectedFileIndex(0);
-      // Встановлюємо перший файл для попереднього перегляду
       setPreviewFileIndex(0);
     }
   }, [files]);
+
+  // Функція для отримання розмірів файлу (заглушка)
+  const getFileDimensions = (file: File) => {
+    // Тут можна було б реально отримати розміри зображення
+    // Поки що повертаємо випадкові розміри
+    return {
+      width: Math.random() * 15 + 8,
+      height: Math.random() * 15 + 8
+    };
+  };
 
   useEffect(() => {
     // Розрахунок ціни з урахуванням скидок
@@ -169,6 +201,23 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
     setFileCopies(prev => 
       prev.map((fc, index) => 
         index === fileIndex ? { ...fc, copies: newCopies } : fc
+      )
+    );
+  };
+
+  const updateFileSize = (fileIndex: number, sizeValue: string) => {
+    const selectedSize = STANDARD_SIZES.find(size => size.value === sizeValue);
+    if (!selectedSize) return;
+
+    setFileCopies(prev => 
+      prev.map((fc, index) => 
+        index === fileIndex ? { 
+          ...fc, 
+          standardSize: sizeValue,
+          sizeType: sizeValue === 'file' ? 'file' : 'standard',
+          width: sizeValue === 'file' ? getFileDimensions(fc.file).width : selectedSize.width,
+          height: sizeValue === 'file' ? getFileDimensions(fc.file).height : selectedSize.height
+        } : fc
       )
     );
   };
@@ -376,7 +425,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
             </div>
           </div>
 
-          {/* Налаштування файлу - окремий блок для будь-якого режиму */}
+          {/* Налаштування файлу */}
           {fileCopies.length > 0 && selectedFileIndex !== null && (
             <Card className="bg-gray-50 border-gray-200 mt-8">
               <CardHeader className="pb-4">
@@ -420,21 +469,44 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                   {/* Розмір файлу */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Розмір файлу
+                      {printType === "roll" ? "Розмір файлу" : "Розмір друку"}
                     </label>
-                    <div className="text-lg font-semibold text-gray-800">
-                      {fileCopies[selectedFileIndex] && fileCopies[selectedFileIndex].length ? 
-                        `${(Math.random() * 15 + 8).toFixed(1)} × ${fileCopies[selectedFileIndex].length.toFixed(1)} см` : 
-                        'Розраховується...'
-                      }
-                    </div>
+                    {printType === "roll" ? (
+                      <div className="text-lg font-semibold text-gray-800">
+                        {fileCopies[selectedFileIndex] && fileCopies[selectedFileIndex].length ? 
+                          `${(Math.random() * 15 + 8).toFixed(1)} × ${fileCopies[selectedFileIndex].length.toFixed(1)} см` : 
+                          'Розраховується...'
+                        }
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Select
+                          value={fileCopies[selectedFileIndex].standardSize}
+                          onValueChange={(value) => updateFileSize(selectedFileIndex, value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Оберіть розмір" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {STANDARD_SIZES.map((size) => (
+                              <SelectItem key={size.value} value={size.value}>
+                                {size.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <div className="text-sm text-gray-600">
+                          Поточний розмір: {fileCopies[selectedFileIndex].width.toFixed(1)} × {fileCopies[selectedFileIndex].height.toFixed(1)} см
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
             </Card>
           )}
 
-          {/* DTF витрати чорнил - окремий блок для будь-якого режиму */}
+          {/* DTF витрати чорнил */}
           {fileCopies.length > 0 && selectedFileIndex !== null && (
             <Card className="bg-blue-50 border-blue-200 mt-8">
               <CardHeader className="pb-4">
@@ -542,7 +614,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
             </Card>
           )}
 
-          {/* Розрахунок вартості - на всю ширину */}
+          {/* Розрахунок вартості */}
           <div className="p-6 bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg border border-orange-200 mt-8">
             <h3 className="text-xl font-bold text-orange-800 mb-4">Розрахунок вартості</h3>
             <div className="space-y-3">
@@ -615,7 +687,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
             </div>
           </div>
 
-          {/* Кнопка продовження - на всю ширину */}
+          {/* Кнопка продовження */}
           {totalPrice > 0 && (
             <Button 
               onClick={handleCalculate}
