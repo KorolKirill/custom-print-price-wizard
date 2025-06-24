@@ -641,32 +641,34 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700 flex items-center gap-2">
                     Загальна довжина:
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-5 w-5 p-0 text-gray-500 hover:text-gray-700">
-                          <Info className="h-4 w-4" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-80">
-                        <div className="space-y-2">
-                          <h4 className="font-medium">Знижки за довжиною:</h4>
-                          <div className="text-sm space-y-1">
-                            <div className="flex justify-between">
-                              <span>До 5 метрів:</span>
-                              <span className="text-gray-600">Базова ціна</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>5-10 метрів:</span>
-                              <span className="text-green-600">-5%</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Понад 10 метрів:</span>
-                              <span className="text-green-600">-10%</span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-5 w-5 p-0 text-gray-500 hover:text-gray-700">
+                            <Info className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent className="w-80">
+                          <div className="space-y-2">
+                            <h4 className="font-medium">Знижки за довжиною:</h4>
+                            <div className="text-sm space-y-1">
+                              <div className="flex justify-between">
+                                <span>До 5 метрів:</span>
+                                <span className="text-gray-600">Базова ціна</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>5-10 метрів:</span>
+                                <span className="text-green-600">-5%</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Понад 10 метрів:</span>
+                                <span className="text-green-600">-10%</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </span>
                   <span className="font-semibold">
                     {getTotalLength().toFixed(1)} см ({(getTotalLength() / 100).toFixed(2)} м)
@@ -687,13 +689,13 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                 <div className="flex justify-between items-center text-xl">
                   <span className="font-bold flex items-center gap-2">
                     Підсумок:
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                    <Popover>
+                      <PopoverTrigger asChild>
                         <Button variant="ghost" size="sm" className="h-5 w-5 p-0 text-gray-500 hover:text-gray-700">
                           <Info className="h-4 w-4" />
                         </Button>
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-xs">
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80">
                         <div className="space-y-2 text-sm">
                           <h4 className="font-medium">Деталізація вартості:</h4>
                           <div className="space-y-1">
@@ -723,8 +725,8 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                             </div>
                           </div>
                         </div>
-                      </TooltipContent>
-                    </Tooltip>
+                      </PopoverContent>
+                    </Popover>
                   </span>
                   <span className="font-bold text-orange-600">
                     {totalPrice > 0 ? `${totalPrice} ₴` : 'Розраховується...'}
