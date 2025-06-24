@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -121,7 +120,7 @@ const Index = () => {
           )}
 
           {currentStep === 1 && (
-            <Card className="max-w-2xl mx-auto">
+            <Card className="max-w-4xl mx-auto">
               <CardHeader>
                 <CardTitle className="text-2xl text-center">Оберіть тип друку</CardTitle>
                 <CardDescription className="text-center">
@@ -129,26 +128,44 @@ const Index = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <RadioGroup value={printType} onValueChange={setPrintType} className="grid grid-cols-1 gap-6">
-                  <div className="flex items-center space-x-4 border border-gray-200 rounded-lg p-6 hover:bg-gray-50 cursor-pointer">
-                    <RadioGroupItem value="single" id="single" />
-                    <Label htmlFor="single" className="cursor-pointer flex items-center gap-4 flex-1">
-                      <ImageIcon className="w-8 h-8 text-orange-500" />
-                      <div>
-                        <div className="text-lg font-medium">Один виріб</div>
-                        <div className="text-sm text-gray-500">Окремий друк одного файлу</div>
-                      </div>
-                    </Label>
+                <RadioGroup value={printType} onValueChange={setPrintType} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="flex flex-col space-y-4 border border-gray-200 rounded-lg p-6 hover:bg-gray-50 cursor-pointer">
+                    <div className="flex items-center space-x-4">
+                      <RadioGroupItem value="single" id="single" />
+                      <Label htmlFor="single" className="cursor-pointer flex items-center gap-4 flex-1">
+                        <ImageIcon className="w-8 h-8 text-orange-500" />
+                        <div>
+                          <div className="text-lg font-medium">Один виріб</div>
+                          <div className="text-sm text-gray-500">Окремий друк одного файлу</div>
+                        </div>
+                      </Label>
+                    </div>
+                    <div className="mt-4">
+                      <img 
+                        src="https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=300&h=200&fit=crop&crop=center" 
+                        alt="Один виріб" 
+                        className="w-full h-32 object-cover rounded-md"
+                      />
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-4 border border-gray-200 rounded-lg p-6 hover:bg-gray-50 cursor-pointer">
-                    <RadioGroupItem value="roll" id="roll" />
-                    <Label htmlFor="roll" className="cursor-pointer flex items-center gap-4 flex-1">
-                      <Scroll className="w-8 h-8 text-orange-500" />
-                      <div>
-                        <div className="text-lg font-medium">Друк у рулоні</div>
-                        <div className="text-sm text-gray-500">Економія 20%, кілька файлів у рулоні</div>
-                      </div>
-                    </Label>
+                  <div className="flex flex-col space-y-4 border border-gray-200 rounded-lg p-6 hover:bg-gray-50 cursor-pointer">
+                    <div className="flex items-center space-x-4">
+                      <RadioGroupItem value="roll" id="roll" />
+                      <Label htmlFor="roll" className="cursor-pointer flex items-center gap-4 flex-1">
+                        <Scroll className="w-8 h-8 text-orange-500" />
+                        <div>
+                          <div className="text-lg font-medium">Друк у рулоні</div>
+                          <div className="text-sm text-gray-500">Кілька файлів у рулоні</div>
+                        </div>
+                      </Label>
+                    </div>
+                    <div className="mt-4">
+                      <img 
+                        src="https://images.unsplash.com/photo-1523712999610-f77fbcfc3843?w=300&h=200&fit=crop&crop=center" 
+                        alt="Друк у рулоні" 
+                        className="w-full h-32 object-cover rounded-md"
+                      />
+                    </div>
                   </div>
                 </RadioGroup>
                 
