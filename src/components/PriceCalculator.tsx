@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -141,6 +142,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
             cyan: Math.floor(Math.random() * 20) + 5,
             magenta: Math.floor(Math.random() * 20) + 5,
             yellow: Math.floor(Math.random() * 20) + 5,
+            black: Math.floor(Math.random() * 20) + 5,
           }
         };
       });
