@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Calculator, ArrowRight, FileImage, FileText, Image as ImageIcon, Minus, Plus } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calculator, ArrowRight, FileImage, FileText, Image as ImageIcon, Minus, Plus, Info } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import * as pdfjsLib from 'pdfjs-dist';
 
@@ -174,6 +175,14 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
     return fileCopies.reduce((total, fc) => {
       const fileTotal = (fc.inkConsumption.cyan + fc.inkConsumption.magenta + fc.inkConsumption.yellow + fc.inkConsumption.black) * fc.copies;
       return total + fileTotal;
+    }, 0);
+  };
+
+  const getTotalLength = () => {
+    return fileCopies.reduce((total, fc) => {
+      // Генеруємо випадкову довжину для кожного файлу (від 8 до 30 см)
+      const fileLength = Math.random() * 22 + 8;
+      return total + (fileLength * fc.copies);
     }, 0);
   };
 
@@ -406,12 +415,12 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
             </Card>
           )}
 
-          {/* DTF витрати фарби - окремий блок */}
+          {/* DTF витрати чорнил - окремий блок */}
           {printType === "roll" && fileCopies.length > 0 && selectedFileIndex !== null && (
             <Card className="bg-blue-50 border-blue-200 mt-8">
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg text-blue-800 flex items-center gap-2">
-                  🎨 Витрати фарби DTF
+                  🎨 Витрати чорнил DTF
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -526,9 +535,41 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
               </div>
               {printType === "roll" ? (
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-700">Загальна кількість копій:</span>
+                  <span className="text-gray-700 flex items-center gap-2">
+                    Загальна довжина:
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-5 w-5 p-0 text-gray-500 hover:text-gray-700">
+                          <Info className="h-4 w-4" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80">
+                        <div className="space-y-2">
+                          <h4 className="font-medium">Знижки за довжиною:</h4>
+                          <div className="text-sm space-y-1">
+                            <div className="flex justify-between">
+                              <span>До 1 метра:</span>
+                              <span className="text-gray-600">Базова ціна</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>1-3 метри:</span>
+                              <span className="text-green-600">-10%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>3-5 метрів:</span>
+                              <span className="text-green-600">-15%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Понад 5 метрів:</span>
+                              <span className="text-green-600">-20%</span>
+                            </div>
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </span>
                   <span className="font-semibold">
-                    {fileCopies.reduce((sum, fc) => sum + fc.copies, 0)}
+                    {getTotalLength().toFixed(1)} см
                   </span>
                 </div>
               ) : (
@@ -543,7 +584,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                     💰 Знижка 20% за друк у рулоні
                   </div>
                   <div className="flex justify-between items-center pt-2 border-t">
-                    <span className="text-gray-700 font-medium">Загальні витрати фарби:</span>
+                    <span className="text-gray-700 font-medium">Загальні витрати чорнил:</span>
                     <span className="font-bold text-blue-600">
                       {getTotalInkConsumption().toFixed(1)} мл
                     </span>
