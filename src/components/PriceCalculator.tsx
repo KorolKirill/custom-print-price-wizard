@@ -687,46 +687,44 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                 <div className="flex justify-between items-center text-xl">
                   <span className="font-bold flex items-center gap-2">
                     Підсумок:
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-5 w-5 p-0 text-gray-500 hover:text-gray-700">
-                            <Info className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-xs">
-                          <div className="space-y-2 text-sm">
-                            <h4 className="font-medium">Деталізація вартості:</h4>
-                            <div className="space-y-1">
-                              <div className="flex justify-between">
-                                <span>Чорнила ({getTotalInkConsumption().toFixed(1)} мл):</span>
-                                <span>{getInkCost().toFixed(0)} ₴</span>
-                              </div>
-                              <div className="text-xs text-gray-500 mb-2">
-                                Формула: {getTotalInkConsumption().toFixed(1)} мл × {(3780/1000).toFixed(2)} ₴/мл
-                              </div>
-                              <div className="flex justify-between">
-                                <span>Обробка замовлення:</span>
-                                <span>{getOrderProcessingCost()} ₴</span>
-                              </div>
-                              <div className="text-xs text-gray-500 mb-2">
-                                {fileCopies.reduce((sum, fc) => sum + fc.copies, 0)} шт × 50 ₴/шт
-                              </div>
-                              <div className="flex justify-between">
-                                <span>Робота обладнання:</span>
-                                <span>{getEquipmentCost()} ₴</span>
-                              </div>
-                              <div className="border-t pt-1 mt-1">
-                                <div className="flex justify-between font-medium">
-                                  <span>Всього:</span>
-                                  <span>{(getInkCost() + getOrderProcessingCost() + getEquipmentCost()).toFixed(0)} ₴</span>
-                                </div>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-5 w-5 p-0 text-gray-500 hover:text-gray-700">
+                          <Info className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <div className="space-y-2 text-sm">
+                          <h4 className="font-medium">Деталізація вартості:</h4>
+                          <div className="space-y-1">
+                            <div className="flex justify-between">
+                              <span>Чорнила ({getTotalInkConsumption().toFixed(1)} мл):</span>
+                              <span>{getInkCost().toFixed(0)} ₴</span>
+                            </div>
+                            <div className="text-xs text-gray-500 mb-2">
+                              Формула: {getTotalInkConsumption().toFixed(1)} мл × {(3780/1000).toFixed(2)} ₴/мл
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Обробка замовлення:</span>
+                              <span>{getOrderProcessingCost()} ₴</span>
+                            </div>
+                            <div className="text-xs text-gray-500 mb-2">
+                              {fileCopies.reduce((sum, fc) => sum + fc.copies, 0)} шт × 50 ₴/шт
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Робота обладнання:</span>
+                              <span>{getEquipmentCost()} ₴</span>
+                            </div>
+                            <div className="border-t pt-1 mt-1">
+                              <div className="flex justify-between font-medium">
+                                <span>Всього:</span>
+                                <span>{(getInkCost() + getOrderProcessingCost() + getEquipmentCost()).toFixed(0)} ₴</span>
                               </div>
                             </div>
                           </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
                   </span>
                   <span className="font-bold text-orange-600">
                     {totalPrice > 0 ? `${totalPrice} ₴` : 'Розраховується...'}
