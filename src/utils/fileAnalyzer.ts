@@ -1,5 +1,9 @@
-
 import * as pdfjsLib from 'pdfjs-dist';
+
+// Настройка worker для PDF.js
+if (typeof window !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+}
 
 export interface FileDimensions {
   width: number;  // в см
@@ -29,6 +33,8 @@ export class FileAnalyzer {
     const fileType = file.type;
     const fileName = file.name.toLowerCase();
     const fileSize = file.size;
+
+    console.log(`Анализируем файл: ${file.name}, тип: ${fileType}, размер: ${(fileSize / 1024 / 1024).toFixed(1)} МБ`);
 
     if (fileType.startsWith('image/')) {
       return this.analyzeImageFile(file);
@@ -100,23 +106,39 @@ export class FileAnalyzer {
   private static async analyzePDFFile(file: File): Promise<FileAnalysisResult> {
     const shouldExtractImage = file.size <= this.MAX_PREVIEW_SIZE;
     
+    console.log(`Анализируем PDF файл: ${file.name}, размер: ${(file.size / 1024 / 1024).toFixed(1)} МБ`);
+    
     try {
       const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      console.log('PDF ArrayBuffer создан, размер:', arrayBuffer.byteLength);
+      
+      const loadingTask = pdfjsLib.getDocument({ 
+        data: arrayBuffer,
+        verbosity: 0 // Отключаем лишние логи PDF.js
+      });
+      
+      const pdf = await loadingTask.promise;
+      console.log(`PDF загружен, количество страниц: ${pdf.numPages}`);
+      
       const page = await pdf.getPage(1);
+      console.log('Первая страница загружена');
       
       const viewport = page.getViewport({ scale: 1 });
+      console.log(`PDF размеры viewport: ${viewport.width}x${viewport.height} точек`);
       
       // PDF размеры в пунктах (points), конвертируем в см
       // 1 point = 1/72 inch, 1 inch = 2.54 cm
       const widthCm = (viewport.width / 72) * 2.54;
       const heightCm = (viewport.height / 72) * 2.54;
 
+      console.log(`PDF размеры в см: ${widthCm.toFixed(1)}x${heightCm.toFixed(1)}`);
+
       // Извлекаем изображение только для файлов меньше 5 МБ
       let imageData: Uint8Array | undefined;
       let hasImageData = false;
 
       if (shouldExtractImage) {
+        console.log('Извлекаем изображение из PDF для анализа чернил...');
         try {
           const scale = 1.5;
           const scaledViewport = page.getViewport({ scale });
@@ -127,23 +149,27 @@ export class FileAnalyzer {
             canvas.height = scaledViewport.height;
             canvas.width = scaledViewport.width;
 
-            await page.render({
+            const renderTask = page.render({
               canvasContext: context,
               viewport: scaledViewport,
-            }).promise;
+            });
+            
+            await renderTask.promise;
+            console.log('PDF страница отрендерена в canvas');
             
             const canvasImageData = context.getImageData(0, 0, canvas.width, canvas.height);
             imageData = new Uint8Array(canvasImageData.data);
             hasImageData = true;
+            console.log(`Извлечено ${imageData.length} байт данных изображения`);
           }
-        } catch (error) {
-          console.warn('Не удалось извлечь изображение из PDF для анализа цветов:', error);
+        } catch (renderError) {
+          console.warn('Не удалось отрендерить PDF для анализа цветов:', renderError);
         }
       } else {
-        console.log(`PDF файл ${file.name} слишком большой (${(file.size / 1024 / 1024).toFixed(1)} МБ), предпросмотр отключен`);
+        console.log(`PDF файл ${file.name} слишком большой (${(file.size / 1024 / 1024).toFixed(1)} МБ), извлечение изображения отключено`);
       }
 
-      return {
+      const result = {
         dimensions: {
           width: Math.round(widthCm * 10) / 10,
           height: Math.round(heightCm * 10) / 10,
@@ -154,10 +180,21 @@ export class FileAnalyzer {
         hasImageData,
         fileSize: file.size
       };
+
+      console.log('PDF анализ завершен успешно:', result.dimensions);
+      return result;
+      
     } catch (error) {
       console.error('Ошибка при анализе PDF:', error);
+      console.error('Детали ошибки:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
+      
+      // Fallback с размерами A4
       return {
-        dimensions: { width: 21, height: 29.7 }, // A4 по умолчанию
+        dimensions: { width: 21, height: 29.7 },
         hasImageData: false,
         fileSize: file.size
       };
