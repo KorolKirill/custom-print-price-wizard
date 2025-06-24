@@ -2,11 +2,9 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ShoppingCart, User, Phone, Mail, MessageSquare } from "lucide-react";
+import { ShoppingCart, MessageSquare, CreditCard, Send } from "lucide-react";
 
 interface OrderFormProps {
   files: File[];
@@ -15,47 +13,31 @@ interface OrderFormProps {
 }
 
 const OrderForm = ({ files, totalPrice, onOrderCreated }: OrderFormProps) => {
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    comment: "",
-    agreeToTerms: false,
-  });
-
+  const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.agreeToTerms) {
-      alert("Необхідно погодитися з умовами надання послуг");
-      return;
-    }
-
+  const handleOnlineOrder = () => {
     setIsSubmitting(true);
     
-    // Імітація створення замовлення
+    // Імітація переходу на чекаут
     setTimeout(() => {
-      console.log("Створено замовлення:", {
+      console.log("Перехід на онлайн чекаут:", {
         files: files.map(f => f.name),
         totalPrice,
-        customerData: formData
+        comment
       });
       
+      alert('Перехід на онлайн чекаут (поки заглушка)');
       setIsSubmitting(false);
       onOrderCreated();
-    }, 2000);
+    }, 1000);
   };
 
-  const isFormValid = formData.name && formData.phone && formData.email && formData.agreeToTerms;
+  const handleTelegramOrder = () => {
+    const orderInfo = `Замовлення DTF друку:\n- Кількість файлів: ${files.length}\n- Загальна вартість: ${totalPrice.toLocaleString()} ₴${comment ? `\n- Коментар: ${comment}` : ''}`;
+    const telegramUrl = `https://t.me/your_telegram_username?text=${encodeURIComponent(orderInfo)}`;
+    window.open(telegramUrl, '_blank');
+  };
 
   return (
     <Card className="max-w-2xl mx-auto">
@@ -65,7 +47,7 @@ const OrderForm = ({ files, totalPrice, onOrderCreated }: OrderFormProps) => {
           Оформлення замовлення
         </CardTitle>
         <CardDescription className="text-center">
-          Заповніть контактні дані для завершення замовлення
+          Оберіть спосіб оформлення замовлення
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -86,59 +68,7 @@ const OrderForm = ({ files, totalPrice, onOrderCreated }: OrderFormProps) => {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Контактна інформація */}
-          <div className="space-y-4">
-            <h4 className="font-medium text-gray-700 flex items-center gap-2">
-              <User className="w-4 h-4" />
-              Контактна інформація
-            </h4>
-            
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Ім'я *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
-                  placeholder="Ваше ім'я"
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="phone">Телефон *</Label>
-                <div className="relative">
-                  <Phone className="w-4 h-4 absolute left-3 top-3 text-gray-400" />
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
-                    placeholder="+38 (000) 000-00-00"
-                    className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="email">Email *</Label>
-              <div className="relative">
-                <Mail className="w-4 h-4 absolute left-3 top-3 text-gray-400" />
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
-                  placeholder="your@email.com"
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </div>
-          </div>
-
+        <div className="space-y-6">
           {/* Коментар */}
           <div className="space-y-2">
             <Label htmlFor="comment">
@@ -147,51 +77,45 @@ const OrderForm = ({ files, totalPrice, onOrderCreated }: OrderFormProps) => {
             </Label>
             <Textarea
               id="comment"
-              value={formData.comment}
-              onChange={(e) => handleInputChange("comment", e.target.value)}
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
               placeholder="Додаткові побажання або вимоги до замовлення..."
               rows={3}
             />
           </div>
 
-          {/* Згода */}
-          <div className="flex items-start space-x-2">
-            <Checkbox
-              id="terms"
-              checked={formData.agreeToTerms}
-              onCheckedChange={(checked) => handleInputChange("agreeToTerms", checked as boolean)}
-            />
-            <Label htmlFor="terms" className="text-sm text-gray-600 leading-relaxed">
-              Я погоджуюся з{" "}
-              <button type="button" className="text-purple-600 hover:underline">
-                умовами надання послуг
-              </button>{" "}
-              та{" "}
-              <button type="button" className="text-purple-600 hover:underline">
-                політикою обробки персональних даних
-              </button>
-            </Label>
-          </div>
-
-          {/* Кнопка відправки */}
-          <div className="pt-4">
+          {/* Кнопки оформлення */}
+          <div className="space-y-4 pt-4">
             <Button
-              type="submit"
-              disabled={!isFormValid || isSubmitting}
+              onClick={handleOnlineOrder}
+              disabled={isSubmitting}
               className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50"
               size="lg"
             >
               {isSubmitting ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Створення замовлення...
+                  Оформлення...
                 </>
               ) : (
-                `Створити замовлення на ${totalPrice.toLocaleString()} ₴`
+                <>
+                  <CreditCard className="w-5 h-5 mr-2" />
+                  Оформити онлайн - {totalPrice.toLocaleString()} ₴
+                </>
               )}
             </Button>
+
+            <Button
+              onClick={handleTelegramOrder}
+              variant="outline"
+              className="w-full border-blue-500 text-blue-600 hover:bg-blue-50"
+              size="lg"
+            >
+              <Send className="w-5 h-5 mr-2" />
+              Оформити через Telegram
+            </Button>
           </div>
-        </form>
+        </div>
       </CardContent>
     </Card>
   );
