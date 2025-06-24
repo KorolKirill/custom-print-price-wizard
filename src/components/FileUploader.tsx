@@ -112,8 +112,7 @@ const FileUploader = ({ onFilesUploaded, printType, maxFiles }: FileUploaderProp
             Перетягніть файли сюди або натисніть для вибору
           </p>
           <p className="text-sm text-gray-500 mb-4">
-            {maxFiles && `Максимум ${maxFiles} файл${maxFiles > 1 ? 'ів' : ''} • `}
-            Максимальний розмір файлу: 50MB
+            {maxFiles && `Максимум ${maxFiles} файл${maxFiles > 1 ? 'ів' : ''}`}
           </p>
           <Button 
             onClick={() => fileInputRef.current?.click()}
