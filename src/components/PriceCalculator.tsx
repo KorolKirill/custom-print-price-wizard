@@ -462,58 +462,6 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                           </div>
                         </div>
                       </div>
-
-                      {/* Расход краски (только показ, без настройки) */}
-                      <div className="mt-6">
-                        <h5 className="text-sm font-medium text-gray-700 mb-3">
-                          Расход краски (мл на одну копию)
-                        </h5>
-                        <div className="grid grid-cols-4 gap-4">
-                          {/* Cyan */}
-                          <div className="text-center">
-                            <div className="flex items-center justify-center gap-2 mb-2">
-                              <div className="w-4 h-4 bg-cyan-500 rounded"></div>
-                              <span className="text-sm font-medium">Голубой (Cyan)</span>
-                            </div>
-                            <div className="text-lg font-semibold text-cyan-600">
-                              {fileCopies[selectedFileIndex].inkConsumption.cyan.toFixed(1)} мл
-                            </div>
-                          </div>
-
-                          {/* Magenta */}
-                          <div className="text-center">
-                            <div className="flex items-center justify-center gap-2 mb-2">
-                              <div className="w-4 h-4 bg-pink-500 rounded"></div>
-                              <span className="text-sm font-medium">Пурпурный (Magenta)</span>
-                            </div>
-                            <div className="text-lg font-semibold text-pink-600">
-                              {fileCopies[selectedFileIndex].inkConsumption.magenta.toFixed(1)} мл
-                            </div>
-                          </div>
-
-                          {/* Yellow */}
-                          <div className="text-center">
-                            <div className="flex items-center justify-center gap-2 mb-2">
-                              <div className="w-4 h-4 bg-yellow-400 rounded"></div>
-                              <span className="text-sm font-medium">Желтый (Yellow)</span>
-                            </div>
-                            <div className="text-lg font-semibold text-yellow-600">
-                              {fileCopies[selectedFileIndex].inkConsumption.yellow.toFixed(1)} мл
-                            </div>
-                          </div>
-
-                          {/* Black */}
-                          <div className="text-center">
-                            <div className="flex items-center justify-center gap-2 mb-2">
-                              <div className="w-4 h-4 bg-black rounded"></div>
-                              <span className="text-sm font-medium">Черный (Black)</span>
-                            </div>
-                            <div className="text-lg font-semibold text-gray-800">
-                              {fileCopies[selectedFileIndex].inkConsumption.black.toFixed(1)} мл
-                            </div>
-                          </div>
-                        </div>
-                      </div>
                     </div>
                   </CardContent>
                 </Card>
