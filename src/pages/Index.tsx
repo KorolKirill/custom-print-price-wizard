@@ -1,10 +1,9 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Upload, Calculator, ShoppingCart, CheckCircle, Image as ImageIcon, Scroll } from "lucide-react";
+import { Upload, Calculator, ShoppingCart, CheckCircle, Image as ImageIcon, Scroll, ArrowLeft } from "lucide-react";
 import FileUploader from "@/components/FileUploader";
 import PriceCalculator from "@/components/PriceCalculator";
 import OrderForm from "@/components/OrderForm";
@@ -36,6 +35,22 @@ const Index = () => {
 
   const handleOrderCreated = () => {
     setCurrentStep(5);
+  };
+
+  const goBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+      if (currentStep === 2) {
+        setPrintType("");
+        setUploadedFiles([]);
+      }
+      if (currentStep === 3) {
+        setUploadedFiles([]);
+      }
+      if (currentStep === 4) {
+        setCalculatedPrice(0);
+      }
+    }
   };
 
   return (
@@ -90,6 +105,20 @@ const Index = () => {
       {/* Main Content */}
       <section className="py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
+          {/* Back Button */}
+          {currentStep > 1 && (
+            <div className="mb-6">
+              <Button 
+                onClick={goBack}
+                variant="outline"
+                className="flex items-center gap-2 hover:bg-gray-50"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Назад
+              </Button>
+            </div>
+          )}
+
           {currentStep === 1 && (
             <Card className="max-w-2xl mx-auto">
               <CardHeader>
@@ -186,7 +215,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Features */}
+      {/* Features - показываем только на первом шаге */}
       {currentStep === 1 && (
         <section className="py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

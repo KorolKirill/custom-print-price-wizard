@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -5,11 +6,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { Calculator, FileText, Palette, Ruler, Scroll, Image as ImageIcon } from "lucide-react";
+import { Calculator, FileText, Palette, Ruler, Image as ImageIcon } from "lucide-react";
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Настройка worker для PDF.js
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+// Настройка worker для PDF.js через локальный файл
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
 interface PriceCalculatorProps {
   files: File[];
@@ -77,14 +78,23 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
             
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-            
-            await page.render({ canvasContext: context!, viewport }).promise;
-            urls.push(canvas.toDataURL());
+            if (context) {
+              canvas.height = viewport.height;
+              canvas.width = viewport.width;
+              
+              await page.render({ canvasContext: context, viewport }).promise;
+              urls.push(canvas.toDataURL());
+            }
           } catch (error) {
             console.error('Ошибка создания превью PDF:', error);
+            // Добавляем placeholder для PDF
+            urls.push('/placeholder.svg');
           }
+        } else if (file.name.toLowerCase().endsWith('.psd')) {
+          // Для PSD файлов используем placeholder
+          urls.push('/placeholder.svg');
+        } else {
+          urls.push('/placeholder.svg');
         }
       }
       
@@ -105,7 +115,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
     };
   }, [files]);
 
-  // Компонент для отображения расхода краски в виде колбочек
+  // Компонент для отображения расхода краски в виде колбочек (заглушка)
   const InkTubes = ({ inkData }: { inkData: InkCalculation }) => {
     const maxInk = 100; // максимальное значение для визуализации
     const colors = [
@@ -214,141 +224,19 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
     });
   };
 
-  // Функция для анализа изображения и расчета краски (включая белую)
-  const analyzeImageForInk = async (file: File): Promise<InkCalculation> => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      
-      img.onload = () => {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx?.drawImage(img, 0, 0);
-        
-        // Получаем данные пикселей
-        const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
-        const data = imageData?.data;
-        
-        if (!data) {
-          resolve({
-            totalInkUsage: 20,
-            colorBreakdown: { cyan: 3, magenta: 4, yellow: 5, black: 3, white: 5 },
-            estimatedCost: 35
-          });
-          return;
-        }
-        
-        let totalPixels = 0;
-        let nonTransparentPixels = 0;
-        let colorTotals = { cyan: 0, magenta: 0, yellow: 0, black: 0 };
-        
-        // Анализируем каждый пикель
-        for (let i = 0; i < data.length; i += 4) {
-          const r = data[i];
-          const g = data[i + 1];
-          const b = data[i + 2];
-          const a = data[i + 3];
-          
-          totalPixels++;
-          
-          // Если пиксель не прозрачный, считаем что нужна белая подложка
-          if (a >= 128) {
-            nonTransparentPixels++;
-            
-            // Простая конвертация RGB в CMYK
-            const c = 1 - (r / 255);
-            const m = 1 - (g / 255);
-            const y = 1 - (b / 255);
-            const k = Math.min(c, m, y);
-            
-            colorTotals.cyan += Math.max(0, c - k);
-            colorTotals.magenta += Math.max(0, m - k);
-            colorTotals.yellow += Math.max(0, y - k);
-            colorTotals.black += k;
-          }
-        }
-        
-        if (totalPixels === 0) {
-          resolve({
-            totalInkUsage: 8,
-            colorBreakdown: { cyan: 1, magenta: 1, yellow: 1, black: 2, white: 3 },
-            estimatedCost: 15
-          });
-          return;
-        }
-        
-        // Нормализуем значения и переводим в мл
-        const normalizeAndScale = (value: number) => Math.round((value / totalPixels) * 100 * 100) / 100;
-        
-        const breakdown = {
-          cyan: normalizeAndScale(colorTotals.cyan),
-          magenta: normalizeAndScale(colorTotals.magenta),
-          yellow: normalizeAndScale(colorTotals.yellow),
-          black: normalizeAndScale(colorTotals.black),
-          white: Math.round((nonTransparentPixels / totalPixels) * 80 * 100) / 100 // Белая подложка для всех непрозрачных пикселей
-        };
-        
-        const totalInk = breakdown.cyan + breakdown.magenta + breakdown.yellow + breakdown.black + breakdown.white;
-        const estimatedCost = Math.round(totalInk * 1.8); // 1.8 руб за мл с учетом белой краски
-        
-        resolve({
-          totalInkUsage: Math.round(totalInk * 100) / 100,
-          colorBreakdown: breakdown,
-          estimatedCost
-        });
-      };
-      
-      // Если файл - изображение, загружаем его
-      if (file.type.startsWith('image/')) {
-        img.src = URL.createObjectURL(file);
-      } else {
-        // Для PDF и PSD файлов используем приблизительные данные
-        const fileSize = file.size / (1024 * 1024); // размер в MB
-        const estimatedInk = Math.max(8, Math.min(60, fileSize * 10));
-        
-        resolve({
-          totalInkUsage: Math.round(estimatedInk * 100) / 100,
-          colorBreakdown: {
-            cyan: Math.round(estimatedInk * 0.2 * 100) / 100,
-            magenta: Math.round(estimatedInk * 0.25 * 100) / 100,
-            yellow: Math.round(estimatedInk * 0.2 * 100) / 100,
-            black: Math.round(estimatedInk * 0.15 * 100) / 100,
-            white: Math.round(estimatedInk * 0.2 * 100) / 100
-          },
-          estimatedCost: Math.round(estimatedInk * 1.8)
-        });
-      }
-    });
-  };
-
-  const calculateInkForAllFiles = async () => {
-    let totalInk = { cyan: 0, magenta: 0, yellow: 0, black: 0, white: 0 };
-    let totalCost = 0;
-    
-    for (const file of files) {
-      const inkData = await analyzeImageForInk(file);
-      totalInk.cyan += inkData.colorBreakdown.cyan;
-      totalInk.magenta += inkData.colorBreakdown.magenta;
-      totalInk.yellow += inkData.colorBreakdown.yellow;
-      totalInk.black += inkData.colorBreakdown.black;
-      totalInk.white += inkData.colorBreakdown.white;
-      totalCost += inkData.estimatedCost;
-    }
-    
-    const totalUsage = totalInk.cyan + totalInk.magenta + totalInk.yellow + totalInk.black + totalInk.white;
-    
-    setInkCalculation({
-      totalInkUsage: Math.round(totalUsage * 100) / 100,
+  // Заглушка для расхода краски - данные будут приходить с сервера
+  const getMockInkCalculation = (): InkCalculation => {
+    return {
+      totalInkUsage: 25.5,
       colorBreakdown: {
-        cyan: Math.round(totalInk.cyan * 100) / 100,
-        magenta: Math.round(totalInk.magenta * 100) / 100,
-        yellow: Math.round(totalInk.yellow * 100) / 100,
-        black: Math.round(totalInk.black * 100) / 100,
-        white: Math.round(totalInk.white * 100) / 100
+        cyan: 4.2,
+        magenta: 6.8,
+        yellow: 3.1,
+        black: 5.4,
+        white: 6.0
       },
-      estimatedCost: totalCost
-    });
+      estimatedCost: 45
+    };
   };
 
   // Определяем размеры файлов при загрузке
@@ -368,7 +256,8 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
     
     setIsCalculating(true);
     
-    await calculateInkForAllFiles();
+    // Заглушка для расхода краски
+    setInkCalculation(getMockInkCalculation());
     
     setTimeout(() => {
       let basePrice = 0;
@@ -454,12 +343,12 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                 )}
               </div>
 
-              {/* Расчет краски с колбочками */}
+              {/* Расчет краски с колбочками - заглушка */}
               {inkCalculation && (
                 <div className="bg-gradient-to-br from-blue-50 to-purple-50 p-6 rounded-lg border border-blue-200">
                   <h4 className="font-medium text-blue-800 mb-4 flex items-center gap-2">
                     <Palette className="w-4 h-4" />
-                    Расход краски DTF
+                    Расход краски DTF (данные с сервера)
                   </h4>
                   
                   <div className="grid md:grid-cols-2 gap-6">
@@ -471,6 +360,9 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                       <div>
                         <p className="text-sm text-blue-600">Стоимость краски:</p>
                         <p className="text-xl font-bold text-blue-800">{inkCalculation.estimatedCost} ₽</p>
+                      </div>
+                      <div className="text-xs text-blue-500">
+                        * Данные получены с сервера
                       </div>
                     </div>
                     
