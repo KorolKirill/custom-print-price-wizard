@@ -257,7 +257,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
         </CardHeader>
         <CardContent>
           <div className="grid lg:grid-cols-2 gap-8">
-            {/* Левая колонка - информация и расчет */}
+            {/* Левая колонка - информация о файлах */}
             <div className="space-y-6">
               {/* Информация о файлах */}
               <div className="space-y-4">
@@ -307,224 +307,6 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                   ))}
                 </div>
               </div>
-
-              {/* DTF Ink Consumption Display */}
-              {printType === "roll" && fileCopies.length > 0 && selectedFileIndex !== null && (
-                <Card className="bg-blue-50 border-blue-200">
-                  <CardHeader className="pb-4">
-                    <CardTitle className="text-lg text-blue-800 flex items-center gap-2">
-                      🎨 Расход краски DTF
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    {/* Основная информация */}
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <div className="text-sm text-gray-600 mb-1">Общий расход:</div>
-                        <div className="text-2xl font-bold text-blue-900">
-                          {getTotalInkConsumption().toFixed(1)} мл
-                        </div>
-                        <div className="text-sm text-gray-600 mt-2">Стоимость краски:</div>
-                        <div className="text-xl font-semibold text-blue-700">
-                          {Math.round(getTotalInkConsumption() * 1.8)} ₽
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <div className="text-sm text-gray-600 mb-3">Расход по цветам:</div>
-                        <div className="flex items-end gap-3 h-16">
-                          {/* Cyan */}
-                          <div className="flex flex-col items-center">
-                            <div 
-                              className="w-8 bg-cyan-400 rounded-t"
-                              style={{ 
-                                height: `${Math.max(8, (fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.cyan * fc.copies, 0) / getTotalInkConsumption()) * 56)}px` 
-                              }}
-                            ></div>
-                            <div className="text-xs text-center mt-1">
-                              <div className="font-medium">Cyan</div>
-                              <div className="text-gray-600">
-                                {fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.cyan * fc.copies, 0).toFixed(1)} мл
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {/* Magenta */}
-                          <div className="flex flex-col items-center">
-                            <div 
-                              className="w-8 bg-pink-400 rounded-t"
-                              style={{ 
-                                height: `${Math.max(8, (fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.magenta * fc.copies, 0) / getTotalInkConsumption()) * 56)}px` 
-                              }}
-                            ></div>
-                            <div className="text-xs text-center mt-1">
-                              <div className="font-medium">Magenta</div>
-                              <div className="text-gray-600">
-                                {fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.magenta * fc.copies, 0).toFixed(1)} мл
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {/* Yellow */}
-                          <div className="flex flex-col items-center">
-                            <div 
-                              className="w-8 bg-yellow-400 rounded-t"
-                              style={{ 
-                                height: `${Math.max(8, (fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.yellow * fc.copies, 0) / getTotalInkConsumption()) * 56)}px` 
-                              }}
-                            ></div>
-                            <div className="text-xs text-center mt-1">
-                              <div className="font-medium">Yellow</div>
-                              <div className="text-gray-600">
-                                {fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.yellow * fc.copies, 0).toFixed(1)} мл
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {/* Black */}
-                          <div className="flex flex-col items-center">
-                            <div 
-                              className="w-8 bg-gray-800 rounded-t"
-                              style={{ 
-                                height: `${Math.max(8, (fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.black * fc.copies, 0) / getTotalInkConsumption()) * 56)}px` 
-                              }}
-                            ></div>
-                            <div className="text-xs text-center mt-1">
-                              <div className="font-medium">Black</div>
-                              <div className="text-gray-600">
-                                {fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.black * fc.copies, 0).toFixed(1)} мл
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* White */}
-                          <div className="flex flex-col items-center">
-                            <div 
-                              className="w-8 bg-gray-300 border border-gray-400 rounded-t"
-                              style={{ height: `${Math.max(8, 80 * 0.15)}px` }}
-                            ></div>
-                            <div className="text-xs text-center mt-1">
-                              <div className="font-medium">White</div>
-                              <div className="text-gray-600">
-                                {(getTotalInkConsumption() * 0.15).toFixed(1)} мл
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Настройки выбранного файла */}
-                    <div className="border-t pt-6">
-                      <h4 className="text-sm font-medium text-gray-700 mb-4">
-                        Настройки файла: {files[selectedFileIndex].name}
-                      </h4>
-                      
-                      <div className="grid grid-cols-2 gap-6">
-                        {/* Количество копий */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Количество копий
-                          </label>
-                          <div className="flex items-center gap-3">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => updateCopies(selectedFileIndex, fileCopies[selectedFileIndex].copies - 1)}
-                              disabled={fileCopies[selectedFileIndex].copies <= 1}
-                            >
-                              <Minus className="w-4 h-4" />
-                            </Button>
-                            <Input
-                              type="number"
-                              min="1"
-                              value={fileCopies[selectedFileIndex].copies}
-                              onChange={(e) => updateCopies(selectedFileIndex, parseInt(e.target.value) || 1)}
-                              className="w-20 text-center"
-                            />
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => updateCopies(selectedFileIndex, fileCopies[selectedFileIndex].copies + 1)}
-                            >
-                              <Plus className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-
-                        {/* Размер файла */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Размер файла
-                          </label>
-                          <div className="text-lg font-semibold text-gray-800">
-                            {(Math.random() * 20 + 10).toFixed(1)} × {(Math.random() * 15 + 8).toFixed(1)} см
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Расчет стоимости */}
-              <div className="p-6 bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg border border-orange-200">
-                <h3 className="text-xl font-bold text-orange-800 mb-4">Расчет стоимости</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-700">Тип печати:</span>
-                    <span className="font-semibold">
-                      {printType === "roll" ? "Печать в рулоне" : "Одно изделие"}
-                    </span>
-                  </div>
-                  {printType === "roll" ? (
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-700">Общее количество копий:</span>
-                      <span className="font-semibold">
-                        {fileCopies.reduce((sum, fc) => sum + fc.copies, 0)}
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-700">Количество файлов:</span>
-                      <span className="font-semibold">{files.length}</span>
-                    </div>
-                  )}
-                  {printType === "roll" && (
-                    <>
-                      <div className="text-sm text-green-600 bg-green-50 p-2 rounded">
-                        💰 Скидка 20% за печать в рулоне
-                      </div>
-                      <div className="flex justify-between items-center pt-2 border-t">
-                        <span className="text-gray-700 font-medium">Общий расход краски:</span>
-                        <span className="font-bold text-blue-600">
-                          {getTotalInkConsumption().toFixed(1)} мл
-                        </span>
-                      </div>
-                    </>
-                  )}
-                  <div className="border-t pt-3 mt-3">
-                    <div className="flex justify-between items-center text-xl">
-                      <span className="font-bold">Итого:</span>
-                      <span className="font-bold text-orange-600">
-                        {totalPrice > 0 ? `${totalPrice} ₽` : 'Рассчитывается...'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Кнопка продолжения */}
-              {totalPrice > 0 && (
-                <Button 
-                  onClick={handleCalculate}
-                  className="w-full bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600"
-                  size="lg"
-                >
-                  Продолжить к оформлению заказа
-                  <ArrowRight className="ml-2 w-4 h-4" />
-                </Button>
-              )}
             </div>
 
             {/* Правая колонка - предпросмотр файлов */}
@@ -569,6 +351,224 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
               )}
             </div>
           </div>
+
+          {/* DTF Ink Consumption Display - на всю ширину */}
+          {printType === "roll" && fileCopies.length > 0 && selectedFileIndex !== null && (
+            <Card className="bg-blue-50 border-blue-200 mt-8">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg text-blue-800 flex items-center gap-2">
+                  🎨 Расход краски DTF
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Основная информация */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div>
+                    <div className="text-sm text-gray-600 mb-1">Общий расход:</div>
+                    <div className="text-2xl font-bold text-blue-900">
+                      {getTotalInkConsumption().toFixed(1)} мл
+                    </div>
+                    <div className="text-sm text-gray-600 mt-2">Стоимость краски:</div>
+                    <div className="text-xl font-semibold text-blue-700">
+                      {Math.round(getTotalInkConsumption() * 1.8)} ₽
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="text-sm text-gray-600 mb-3">Расход по цветам:</div>
+                    <div className="flex items-end gap-3 h-16">
+                      {/* Cyan */}
+                      <div className="flex flex-col items-center">
+                        <div 
+                          className="w-8 bg-cyan-400 rounded-t"
+                          style={{ 
+                            height: `${Math.max(8, (fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.cyan * fc.copies, 0) / getTotalInkConsumption()) * 56)}px` 
+                          }}
+                        ></div>
+                        <div className="text-xs text-center mt-1">
+                          <div className="font-medium">Cyan</div>
+                          <div className="text-gray-600">
+                            {fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.cyan * fc.copies, 0).toFixed(1)} мл
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Magenta */}
+                      <div className="flex flex-col items-center">
+                        <div 
+                          className="w-8 bg-pink-400 rounded-t"
+                          style={{ 
+                            height: `${Math.max(8, (fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.magenta * fc.copies, 0) / getTotalInkConsumption()) * 56)}px` 
+                          }}
+                        ></div>
+                        <div className="text-xs text-center mt-1">
+                          <div className="font-medium">Magenta</div>
+                          <div className="text-gray-600">
+                            {fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.magenta * fc.copies, 0).toFixed(1)} мл
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Yellow */}
+                      <div className="flex flex-col items-center">
+                        <div 
+                          className="w-8 bg-yellow-400 rounded-t"
+                          style={{ 
+                            height: `${Math.max(8, (fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.yellow * fc.copies, 0) / getTotalInkConsumption()) * 56)}px` 
+                          }}
+                        ></div>
+                        <div className="text-xs text-center mt-1">
+                          <div className="font-medium">Yellow</div>
+                          <div className="text-gray-600">
+                            {fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.yellow * fc.copies, 0).toFixed(1)} мл
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Black */}
+                      <div className="flex flex-col items-center">
+                        <div 
+                          className="w-8 bg-gray-800 rounded-t"
+                          style={{ 
+                            height: `${Math.max(8, (fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.black * fc.copies, 0) / getTotalInkConsumption()) * 56)}px` 
+                          }}
+                        ></div>
+                        <div className="text-xs text-center mt-1">
+                          <div className="font-medium">Black</div>
+                          <div className="text-gray-600">
+                            {fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.black * fc.copies, 0).toFixed(1)} мл
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* White */}
+                      <div className="flex flex-col items-center">
+                        <div 
+                          className="w-8 bg-gray-300 border border-gray-400 rounded-t"
+                          style={{ height: `${Math.max(8, 80 * 0.15)}px` }}
+                        ></div>
+                        <div className="text-xs text-center mt-1">
+                          <div className="font-medium">White</div>
+                          <div className="text-gray-600">
+                            {(getTotalInkConsumption() * 0.15).toFixed(1)} мл
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Настройки выбранного файла */}
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-4">
+                      Настройки файла: {files[selectedFileIndex].name}
+                    </h4>
+                    
+                    <div className="grid grid-cols-1 gap-4">
+                      {/* Количество копий */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Количество копий
+                        </label>
+                        <div className="flex items-center gap-3">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => updateCopies(selectedFileIndex, fileCopies[selectedFileIndex].copies - 1)}
+                            disabled={fileCopies[selectedFileIndex].copies <= 1}
+                          >
+                            <Minus className="w-4 h-4" />
+                          </Button>
+                          <Input
+                            type="number"
+                            min="1"
+                            value={fileCopies[selectedFileIndex].copies}
+                            onChange={(e) => updateCopies(selectedFileIndex, parseInt(e.target.value) || 1)}
+                            className="w-20 text-center"
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => updateCopies(selectedFileIndex, fileCopies[selectedFileIndex].copies + 1)}
+                          >
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Размер файла */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Размер файла
+                        </label>
+                        <div className="text-lg font-semibold text-gray-800">
+                          {(Math.random() * 20 + 10).toFixed(1)} × {(Math.random() * 15 + 8).toFixed(1)} см
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Расчет стоимости - на всю ширину */}
+          <div className="p-6 bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg border border-orange-200 mt-8">
+            <h3 className="text-xl font-bold text-orange-800 mb-4">Расчет стоимости</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-700">Тип печати:</span>
+                <span className="font-semibold">
+                  {printType === "roll" ? "Печать в рулоне" : "Одно изделие"}
+                </span>
+              </div>
+              {printType === "roll" ? (
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700">Общее количество копий:</span>
+                  <span className="font-semibold">
+                    {fileCopies.reduce((sum, fc) => sum + fc.copies, 0)}
+                  </span>
+                </div>
+              ) : (
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700">Количество файлов:</span>
+                  <span className="font-semibold">{files.length}</span>
+                </div>
+              )}
+              {printType === "roll" && (
+                <>
+                  <div className="text-sm text-green-600 bg-green-50 p-2 rounded">
+                    💰 Скидка 20% за печать в рулоне
+                  </div>
+                  <div className="flex justify-between items-center pt-2 border-t">
+                    <span className="text-gray-700 font-medium">Общий расход краски:</span>
+                    <span className="font-bold text-blue-600">
+                      {getTotalInkConsumption().toFixed(1)} мл
+                    </span>
+                  </div>
+                </>
+              )}
+              <div className="border-t pt-3 mt-3">
+                <div className="flex justify-between items-center text-xl">
+                  <span className="font-bold">Итого:</span>
+                  <span className="font-bold text-orange-600">
+                    {totalPrice > 0 ? `${totalPrice} ₽` : 'Рассчитывается...'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Кнопка продолжения - на всю ширину */}
+          {totalPrice > 0 && (
+            <Button 
+              onClick={handleCalculate}
+              className="w-full bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 mt-6"
+              size="lg"
+            >
+              Продолжить к оформлению заказа
+              <ArrowRight className="ml-2 w-4 h-4" />
+            </Button>
+          )}
         </CardContent>
       </Card>
     </div>
