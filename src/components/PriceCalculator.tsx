@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -253,6 +252,22 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
     if (lengthInMeters >= 10) return 10;
     if (lengthInMeters >= 5) return 5;
     return 0;
+  };
+
+  const getInkCost = () => {
+    const totalInkML = getTotalInkConsumption();
+    const inkPricePerLiter = 3780; // грн за 1 л
+    const inkPricePerML = inkPricePerLiter / 1000; // грн за 1 мл
+    return totalInkML * inkPricePerML;
+  };
+
+  const getOrderProcessingCost = () => {
+    const totalCopies = fileCopies.reduce((sum, fc) => sum + fc.copies, 0);
+    return totalCopies * 50; // 50 грн за кожну копію
+  };
+
+  const getEquipmentCost = () => {
+    return 100; // фіксована вартість 100 грн
   };
 
   const handleCalculate = () => {
@@ -681,13 +696,32 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs">
                           <div className="space-y-2 text-sm">
-                            <h4 className="font-medium">Як розраховується ціна:</h4>
+                            <h4 className="font-medium">Деталізація вартості:</h4>
                             <div className="space-y-1">
-                              <div>• Базова ціна друку</div>
-                              <div>• Вартість витрачених чорнил</div>
-                              <div>• Кількість копій</div>
-                              <div>• Розмір друку</div>
-                              <div>• Знижки за об'ємом (для рулону)</div>
+                              <div className="flex justify-between">
+                                <span>Чорнила ({getTotalInkConsumption().toFixed(1)} мл):</span>
+                                <span>{getInkCost().toFixed(0)} ₴</span>
+                              </div>
+                              <div className="text-xs text-gray-500 mb-2">
+                                Формула: {getTotalInkConsumption().toFixed(1)} мл × {(3780/1000).toFixed(2)} ₴/мл
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Обробка замовлення:</span>
+                                <span>{getOrderProcessingCost()} ₴</span>
+                              </div>
+                              <div className="text-xs text-gray-500 mb-2">
+                                {fileCopies.reduce((sum, fc) => sum + fc.copies, 0)} шт × 50 ₴/шт
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Робота обладнання:</span>
+                                <span>{getEquipmentCost()} ₴</span>
+                              </div>
+                              <div className="border-t pt-1 mt-1">
+                                <div className="flex justify-between font-medium">
+                                  <span>Всього:</span>
+                                  <span>{(getInkCost() + getOrderProcessingCost() + getEquipmentCost()).toFixed(0)} ₴</span>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </TooltipContent>
