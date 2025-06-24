@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,7 +27,12 @@ interface FilePreview {
 interface FileCopy {
   file: File;
   copies: number;
-  inkConsumption: number;
+  inkConsumption: {
+    cyan: number;
+    magenta: number;
+    yellow: number;
+    black: number;
+  };
 }
 
 const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculatorProps) => {
@@ -36,6 +40,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
   const [isLoading, setIsLoading] = useState(true);
   const [totalPrice, setTotalPrice] = useState(0);
   const [fileCopies, setFileCopies] = useState<FileCopy[]>([]);
+  const [selectedFileIndex, setSelectedFileIndex] = useState<number | null>(null);
 
   const generatePreview = async (file: File): Promise<FilePreview> => {
     const fileType = file.type;
@@ -104,9 +109,18 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
       const initialFileCopies = files.map(file => ({
         file,
         copies: 1,
-        inkConsumption: Math.floor(Math.random() * 50) + 10 // случайное число от 10 до 59
+        inkConsumption: {
+          cyan: Math.floor(Math.random() * 20) + 5,
+          magenta: Math.floor(Math.random() * 20) + 5,
+          yellow: Math.floor(Math.random() * 20) + 5,
+          black: Math.floor(Math.random() * 20) + 5,
+        }
       }));
       setFileCopies(initialFileCopies);
+      // Выбираем первый файл по умолчанию для режима рулона
+      if (printType === "roll") {
+        setSelectedFileIndex(0);
+      }
     }
   }, [files]);
 
@@ -142,8 +156,22 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
     );
   };
 
+  const updateInkConsumption = (fileIndex: number, color: keyof FileCopy['inkConsumption'], value: number) => {
+    setFileCopies(prev => 
+      prev.map((fc, index) => 
+        index === fileIndex ? { 
+          ...fc, 
+          inkConsumption: { ...fc.inkConsumption, [color]: Math.max(0, value) }
+        } : fc
+      )
+    );
+  };
+
   const getTotalInkConsumption = () => {
-    return fileCopies.reduce((total, fc) => total + (fc.inkConsumption * fc.copies), 0);
+    return fileCopies.reduce((total, fc) => {
+      const fileTotal = (fc.inkConsumption.cyan + fc.inkConsumption.magenta + fc.inkConsumption.yellow + fc.inkConsumption.black) * fc.copies;
+      return total + fileTotal;
+    }, 0);
   };
 
   const handleCalculate = () => {
@@ -236,8 +264,16 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                 <h3 className="text-lg font-semibold">Загруженные файлы:</h3>
                 <div className="space-y-3">
                   {files.map((file, index) => (
-                    <div key={index} className="p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center justify-between mb-3">
+                    <div 
+                      key={index} 
+                      className={`p-4 rounded-lg cursor-pointer transition-colors ${
+                        printType === "roll" 
+                          ? (selectedFileIndex === index ? "bg-orange-100 border-2 border-orange-300" : "bg-gray-50 hover:bg-gray-100")
+                          : "bg-gray-50"
+                      }`}
+                      onClick={() => printType === "roll" && setSelectedFileIndex(index)}
+                    >
+                      <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           {file.type.startsWith('image/') ? (
                             <ImageIcon className="w-5 h-5 text-blue-500" />
@@ -255,41 +291,16 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                         </div>
                         {printType === "roll" && fileCopies[index] && (
                           <div className="text-right">
-                            <p className="text-sm text-gray-600">Расход краски:</p>
-                            <p className="font-semibold text-blue-600">
-                              {(fileCopies[index].inkConsumption * fileCopies[index].copies).toFixed(1)} мл
+                            <p className="text-sm text-gray-600">Копий: {fileCopies[index].copies}</p>
+                            <p className="text-xs text-blue-600">
+                              {((fileCopies[index].inkConsumption.cyan + fileCopies[index].inkConsumption.magenta + fileCopies[index].inkConsumption.yellow + fileCopies[index].inkConsumption.black) * fileCopies[index].copies).toFixed(1)} мл
                             </p>
                           </div>
                         )}
                       </div>
-                      
-                      {printType === "roll" && fileCopies[index] && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600">Количество копий:</span>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => updateCopies(index, fileCopies[index].copies - 1)}
-                              disabled={fileCopies[index].copies <= 1}
-                            >
-                              <Minus className="w-3 h-3" />
-                            </Button>
-                            <Input
-                              type="number"
-                              min="1"
-                              value={fileCopies[index].copies}
-                              onChange={(e) => updateCopies(index, parseInt(e.target.value) || 1)}
-                              className="w-16 text-center"
-                            />
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => updateCopies(index, fileCopies[index].copies + 1)}
-                            >
-                              <Plus className="w-3 h-3" />
-                            </Button>
-                          </div>
+                      {printType === "roll" && selectedFileIndex === index && (
+                        <div className="mt-2 text-sm text-orange-600">
+                          ← Выбран для настройки
                         </div>
                       )}
                     </div>
@@ -399,6 +410,144 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
               )}
             </div>
           </div>
+
+          {/* Настройки выбранного файла для рулонаной печати */}
+          {printType === "roll" && selectedFileIndex !== null && fileCopies[selectedFileIndex] && (
+            <div className="mt-8 p-6 bg-gray-50 rounded-lg border-2 border-gray-200">
+              <h3 className="text-lg font-semibold mb-4">
+                Настройки файла: {files[selectedFileIndex].name}
+              </h3>
+              
+              {/* Количество копий */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Количество копий
+                </label>
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => updateCopies(selectedFileIndex, fileCopies[selectedFileIndex].copies - 1)}
+                    disabled={fileCopies[selectedFileIndex].copies <= 1}
+                  >
+                    <Minus className="w-4 h-4" />
+                  </Button>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={fileCopies[selectedFileIndex].copies}
+                    onChange={(e) => updateCopies(selectedFileIndex, parseInt(e.target.value) || 1)}
+                    className="w-20 text-center"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => updateCopies(selectedFileIndex, fileCopies[selectedFileIndex].copies + 1)}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Расход краски по цветам */}
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-3">
+                  Расход краски (мл на одну копию)
+                </h4>
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Cyan */}
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">
+                      Голубой (Cyan)
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-cyan-500 rounded"></div>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        value={fileCopies[selectedFileIndex].inkConsumption.cyan}
+                        onChange={(e) => updateInkConsumption(selectedFileIndex, 'cyan', parseFloat(e.target.value) || 0)}
+                        className="text-sm"
+                      />
+                      <span className="text-xs text-gray-500">мл</span>
+                    </div>
+                  </div>
+
+                  {/* Magenta */}
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">
+                      Пурпурный (Magenta)
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-magenta-500 rounded"></div>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        value={fileCopies[selectedFileIndex].inkConsumption.magenta}
+                        onChange={(e) => updateInkConsumption(selectedFileIndex, 'magenta', parseFloat(e.target.value) || 0)}
+                        className="text-sm"
+                      />
+                      <span className="text-xs text-gray-500">мл</span>
+                    </div>
+                  </div>
+
+                  {/* Yellow */}
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">
+                      Желтый (Yellow)
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-yellow-400 rounded"></div>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        value={fileCopies[selectedFileIndex].inkConsumption.yellow}
+                        onChange={(e) => updateInkConsumption(selectedFileIndex, 'yellow', parseFloat(e.target.value) || 0)}
+                        className="text-sm"
+                      />
+                      <span className="text-xs text-gray-500">мл</span>
+                    </div>
+                  </div>
+
+                  {/* Black */}
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">
+                      Черный (Black)
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-black rounded"></div>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        value={fileCopies[selectedFileIndex].inkConsumption.black}
+                        onChange={(e) => updateInkConsumption(selectedFileIndex, 'black', parseFloat(e.target.value) || 0)}
+                        className="text-sm"
+                      />
+                      <span className="text-xs text-gray-500">мл</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Общий расход для выбранного файла */}
+                <div className="mt-4 p-3 bg-blue-50 rounded border border-blue-200">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-blue-700">Общий расход на {fileCopies[selectedFileIndex].copies} копий:</span>
+                    <span className="font-bold text-blue-800">
+                      {((fileCopies[selectedFileIndex].inkConsumption.cyan + 
+                        fileCopies[selectedFileIndex].inkConsumption.magenta + 
+                        fileCopies[selectedFileIndex].inkConsumption.yellow + 
+                        fileCopies[selectedFileIndex].inkConsumption.black) * 
+                        fileCopies[selectedFileIndex].copies).toFixed(1)} мл
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
