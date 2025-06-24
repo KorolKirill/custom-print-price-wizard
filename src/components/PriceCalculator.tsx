@@ -421,130 +421,95 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                       </h4>
                       
                       <div className="grid grid-cols-2 gap-6">
-                        {/* Левая колонка - количество копий и размер */}
-                        <div className="space-y-4">
-                          {/* Количество копий */}
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Количество копий
-                            </label>
-                            <div className="flex items-center gap-3">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => updateCopies(selectedFileIndex, fileCopies[selectedFileIndex].copies - 1)}
-                                disabled={fileCopies[selectedFileIndex].copies <= 1}
-                              >
-                                <Minus className="w-4 h-4" />
-                              </Button>
-                              <Input
-                                type="number"
-                                min="1"
-                                value={fileCopies[selectedFileIndex].copies}
-                                onChange={(e) => updateCopies(selectedFileIndex, parseInt(e.target.value) || 1)}
-                                className="w-20 text-center"
-                              />
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => updateCopies(selectedFileIndex, fileCopies[selectedFileIndex].copies + 1)}
-                              >
-                                <Plus className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </div>
-
-                          {/* Размер файла */}
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Размер файла
-                            </label>
-                            <div className="text-lg font-semibold text-gray-800">
-                              {(Math.random() * 20 + 10).toFixed(1)} × {(Math.random() * 15 + 8).toFixed(1)} см
-                            </div>
+                        {/* Количество копий */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Количество копий
+                          </label>
+                          <div className="flex items-center gap-3">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => updateCopies(selectedFileIndex, fileCopies[selectedFileIndex].copies - 1)}
+                              disabled={fileCopies[selectedFileIndex].copies <= 1}
+                            >
+                              <Minus className="w-4 h-4" />
+                            </Button>
+                            <Input
+                              type="number"
+                              min="1"
+                              value={fileCopies[selectedFileIndex].copies}
+                              onChange={(e) => updateCopies(selectedFileIndex, parseInt(e.target.value) || 1)}
+                              className="w-20 text-center"
+                            />
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => updateCopies(selectedFileIndex, fileCopies[selectedFileIndex].copies + 1)}
+                            >
+                              <Plus className="w-4 h-4" />
+                            </Button>
                           </div>
                         </div>
 
-                        {/* Правая колонка - расход краски */}
+                        {/* Размер файла */}
                         <div>
-                          <h5 className="text-sm font-medium text-gray-700 mb-3">
-                            Расход краски (мл на одну копию)
-                          </h5>
-                          <div className="grid grid-cols-2 gap-3">
-                            {/* Cyan */}
-                            <div>
-                              <label className="block text-xs text-gray-600 mb-1">
-                                Голубой (Cyan)
-                              </label>
-                              <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 bg-cyan-500 rounded flex-shrink-0"></div>
-                                <Input
-                                  type="number"
-                                  min="0"
-                                  step="0.1"
-                                  value={fileCopies[selectedFileIndex].inkConsumption.cyan}
-                                  onChange={(e) => updateInkConsumption(selectedFileIndex, 'cyan', parseFloat(e.target.value) || 0)}
-                                  className="text-xs h-8"
-                                />
-                                <span className="text-xs text-gray-500">мл</span>
-                              </div>
-                            </div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Размер файла
+                          </label>
+                          <div className="text-lg font-semibold text-gray-800">
+                            {(Math.random() * 20 + 10).toFixed(1)} × {(Math.random() * 15 + 8).toFixed(1)} см
+                          </div>
+                        </div>
+                      </div>
 
-                            {/* Magenta */}
-                            <div>
-                              <label className="block text-xs text-gray-600 mb-1">
-                                Пурпурный (Magenta)
-                              </label>
-                              <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 bg-pink-500 rounded flex-shrink-0"></div>
-                                <Input
-                                  type="number"
-                                  min="0"
-                                  step="0.1"
-                                  value={fileCopies[selectedFileIndex].inkConsumption.magenta}
-                                  onChange={(e) => updateInkConsumption(selectedFileIndex, 'magenta', parseFloat(e.target.value) || 0)}
-                                  className="text-xs h-8"
-                                />
-                                <span className="text-xs text-gray-500">мл</span>
-                              </div>
+                      {/* Расход краски (только показ, без настройки) */}
+                      <div className="mt-6">
+                        <h5 className="text-sm font-medium text-gray-700 mb-3">
+                          Расход краски (мл на одну копию)
+                        </h5>
+                        <div className="grid grid-cols-4 gap-4">
+                          {/* Cyan */}
+                          <div className="text-center">
+                            <div className="flex items-center justify-center gap-2 mb-2">
+                              <div className="w-4 h-4 bg-cyan-500 rounded"></div>
+                              <span className="text-sm font-medium">Голубой (Cyan)</span>
                             </div>
-
-                            {/* Yellow */}
-                            <div>
-                              <label className="block text-xs text-gray-600 mb-1">
-                                Желтый (Yellow)
-                              </label>
-                              <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 bg-yellow-400 rounded flex-shrink-0"></div>
-                                <Input
-                                  type="number"
-                                  min="0"
-                                  step="0.1"
-                                  value={fileCopies[selectedFileIndex].inkConsumption.yellow}
-                                  onChange={(e) => updateInkConsumption(selectedFileIndex, 'yellow', parseFloat(e.target.value) || 0)}
-                                  className="text-xs h-8"
-                                />
-                                <span className="text-xs text-gray-500">мл</span>
-                              </div>
+                            <div className="text-lg font-semibold text-cyan-600">
+                              {fileCopies[selectedFileIndex].inkConsumption.cyan.toFixed(1)} мл
                             </div>
+                          </div>
 
-                            {/* Black */}
-                            <div>
-                              <label className="block text-xs text-gray-600 mb-1">
-                                Черный (Black)
-                              </label>
-                              <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 bg-black rounded flex-shrink-0"></div>
-                                <Input
-                                  type="number"
-                                  min="0"
-                                  step="0.1"
-                                  value={fileCopies[selectedFileIndex].inkConsumption.black}
-                                  onChange={(e) => updateInkConsumption(selectedFileIndex, 'black', parseFloat(e.target.value) || 0)}
-                                  className="text-xs h-8"
-                                />
-                                <span className="text-xs text-gray-500">мл</span>
-                              </div>
+                          {/* Magenta */}
+                          <div className="text-center">
+                            <div className="flex items-center justify-center gap-2 mb-2">
+                              <div className="w-4 h-4 bg-pink-500 rounded"></div>
+                              <span className="text-sm font-medium">Пурпурный (Magenta)</span>
+                            </div>
+                            <div className="text-lg font-semibold text-pink-600">
+                              {fileCopies[selectedFileIndex].inkConsumption.magenta.toFixed(1)} мл
+                            </div>
+                          </div>
+
+                          {/* Yellow */}
+                          <div className="text-center">
+                            <div className="flex items-center justify-center gap-2 mb-2">
+                              <div className="w-4 h-4 bg-yellow-400 rounded"></div>
+                              <span className="text-sm font-medium">Желтый (Yellow)</span>
+                            </div>
+                            <div className="text-lg font-semibold text-yellow-600">
+                              {fileCopies[selectedFileIndex].inkConsumption.yellow.toFixed(1)} мл
+                            </div>
+                          </div>
+
+                          {/* Black */}
+                          <div className="text-center">
+                            <div className="flex items-center justify-center gap-2 mb-2">
+                              <div className="w-4 h-4 bg-black rounded"></div>
+                              <span className="text-sm font-medium">Черный (Black)</span>
+                            </div>
+                            <div className="text-lg font-semibold text-gray-800">
+                              {fileCopies[selectedFileIndex].inkConsumption.black.toFixed(1)} мл
                             </div>
                           </div>
                         </div>
