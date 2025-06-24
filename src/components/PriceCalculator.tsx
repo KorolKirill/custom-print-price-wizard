@@ -121,10 +121,8 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
         }
       }));
       setFileCopies(initialFileCopies);
-      // Вибираємо перший файл за замовчуванням для режиму рулону
-      if (printType === "roll") {
-        setSelectedFileIndex(0);
-      }
+      // Вибираємо перший файл за замовчуванням для будь-якого режиму
+      setSelectedFileIndex(0);
       // Встановлюємо перший файл для попереднього перегляду
       setPreviewFileIndex(0);
     }
@@ -153,13 +151,15 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
         price += Math.floor(Math.random() * 100);
         setTotalPrice(Math.round(price));
       } else {
-        let price = basePrice * files.length;
+        // Для одного файлу теж враховуємо кількість копій
+        const totalCopies = fileCopies.reduce((sum, fc) => sum + fc.copies, 0);
+        let price = basePrice * totalCopies;
         price += Math.floor(Math.random() * 100);
         setTotalPrice(price);
       }
     };
 
-    if (files.length > 0 && (printType !== "roll" || fileCopies.length > 0)) {
+    if (files.length > 0 && fileCopies.length > 0) {
       setTimeout(calculatePrice, 1000);
     }
   }, [files, printType, fileCopies]);
@@ -275,9 +275,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
 
   const handleFileSelect = (index: number) => {
     setPreviewFileIndex(index);
-    if (printType === "roll") {
-      setSelectedFileIndex(index);
-    }
+    setSelectedFileIndex(index);
   };
 
   return (
@@ -306,7 +304,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                       className={`p-4 rounded-lg cursor-pointer transition-colors ${
                         previewFileIndex === index 
                           ? "bg-blue-100 border-2 border-blue-300" 
-                          : printType === "roll" && selectedFileIndex === index
+                          : selectedFileIndex === index
                             ? "bg-orange-100 border-2 border-orange-300"
                             : "bg-gray-50 hover:bg-gray-100"
                       }`}
@@ -328,7 +326,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                             </p>
                           </div>
                         </div>
-                        {printType === "roll" && fileCopies[index] && (
+                        {fileCopies[index] && (
                           <div className="text-right">
                             <p className="text-sm text-gray-600">Копій: {fileCopies[index].copies}</p>
                             <p className="text-xs text-blue-600">
@@ -342,7 +340,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                           👁 Відображається у попередньому перегляді
                         </div>
                       )}
-                      {printType === "roll" && selectedFileIndex === index && previewFileIndex !== index && (
+                      {selectedFileIndex === index && previewFileIndex !== index && (
                         <div className="mt-2 text-sm text-orange-600">
                           ← Обрано для налаштування
                         </div>
@@ -378,8 +376,8 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
             </div>
           </div>
 
-          {/* Налаштування файлу - окремий блок для режиму рулону */}
-          {printType === "roll" && fileCopies.length > 0 && selectedFileIndex !== null && (
+          {/* Налаштування файлу - окремий блок для будь-якого режиму */}
+          {fileCopies.length > 0 && selectedFileIndex !== null && (
             <Card className="bg-gray-50 border-gray-200 mt-8">
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg text-gray-800">
@@ -436,8 +434,8 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
             </Card>
           )}
 
-          {/* DTF витрати чорнил - окремий блок */}
-          {printType === "roll" && fileCopies.length > 0 && selectedFileIndex !== null && (
+          {/* DTF витрати чорнил - окремий блок для будь-якого режиму */}
+          {fileCopies.length > 0 && selectedFileIndex !== null && (
             <Card className="bg-blue-50 border-blue-200 mt-8">
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg text-blue-800 flex items-center gap-2">
@@ -591,8 +589,8 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                 </div>
               ) : (
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-700">Кількість файлів:</span>
-                  <span className="font-semibold">{files.length}</span>
+                  <span className="text-gray-700">Загальна кількість копій:</span>
+                  <span className="font-semibold">{fileCopies.reduce((sum, fc) => sum + fc.copies, 0)}</span>
                 </div>
               )}
               {printType === "roll" && getDiscountPercentage() > 0 && (
@@ -600,14 +598,12 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                   💰 Знижка {getDiscountPercentage()}% за довжину
                 </div>
               )}
-              {printType === "roll" && (
-                <div className="flex justify-between items-center pt-2 border-t">
-                  <span className="text-gray-700 font-medium">Загальні витрати чорнил:</span>
-                  <span className="font-bold text-blue-600">
-                    {getTotalInkConsumption().toFixed(1)} мл
-                  </span>
-                </div>
-              )}
+              <div className="flex justify-between items-center pt-2 border-t">
+                <span className="text-gray-700 font-medium">Загальні витрати чорнил:</span>
+                <span className="font-bold text-blue-600">
+                  {getTotalInkConsumption().toFixed(1)} мл
+                </span>
+              </div>
               <div className="border-t pt-3 mt-3">
                 <div className="flex justify-between items-center text-xl">
                   <span className="font-bold">Підсумок:</span>
