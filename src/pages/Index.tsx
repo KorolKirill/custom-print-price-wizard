@@ -81,7 +81,7 @@ const Index = () => {
           </p>
           
           {/* Progress Steps */}
-          <div className="flex justify-center items-center space-x-6 mb-12">
+          <div className="flex justify-center items-center space-x-6 mb-6">
             {[
               { step: 1, icon: CheckCircle, label: "Тип друку", active: currentStep >= 1 },
               { step: 2, icon: Upload, label: "Завантаження файлів", active: currentStep >= 2 },
@@ -99,6 +99,11 @@ const Index = () => {
               </div>
             ))}
           </div>
+          
+          {/* Green text below progress steps */}
+          <p className="text-green-600 font-medium mb-6">
+            Встигніть замовити до 12.00, щоб отримати відправку сьогодні.
+          </p>
         </div>
       </section>
 
@@ -142,9 +147,9 @@ const Index = () => {
                     </div>
                     <div className="mt-4">
                       <img 
-                        src="https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=300&h=200&fit=crop&crop=center" 
+                        src="https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=300&h=300&fit=crop&crop=center" 
                         alt="Один виріб" 
-                        className="w-full h-32 object-cover rounded-md"
+                        className="w-full aspect-square object-cover rounded-md"
                       />
                     </div>
                   </div>
@@ -161,9 +166,9 @@ const Index = () => {
                     </div>
                     <div className="mt-4">
                       <img 
-                        src="https://images.unsplash.com/photo-1523712999610-f77fbcfc3843?w=300&h=200&fit=crop&crop=center" 
+                        src="https://images.unsplash.com/photo-1523712999610-f77fbcfc3843?w=300&h=300&fit=crop&crop=center" 
                         alt="Друк у рулоні" 
-                        className="w-full h-32 object-cover rounded-md"
+                        className="w-full aspect-square object-cover rounded-md"
                       />
                     </div>
                   </div>
