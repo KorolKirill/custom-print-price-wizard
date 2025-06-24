@@ -36,15 +36,15 @@ const OrderForm = ({ files, totalPrice, onOrderCreated }: OrderFormProps) => {
     e.preventDefault();
     
     if (!formData.agreeToTerms) {
-      alert("Необходимо согласиться с условиями оказания услуг");
+      alert("Необхідно погодитися з умовами надання послуг");
       return;
     }
 
     setIsSubmitting(true);
     
-    // Имитация создания заказа
+    // Імітація створення замовлення
     setTimeout(() => {
-      console.log("Создан заказ:", {
+      console.log("Створено замовлення:", {
         files: files.map(f => f.name),
         totalPrice,
         customerData: formData
@@ -62,46 +62,46 @@ const OrderForm = ({ files, totalPrice, onOrderCreated }: OrderFormProps) => {
       <CardHeader>
         <CardTitle className="text-2xl text-center flex items-center justify-center gap-2">
           <ShoppingCart className="w-6 h-6" />
-          Оформление заказа
+          Оформлення замовлення
         </CardTitle>
         <CardDescription className="text-center">
-          Заполните контактные данные для завершения заказа
+          Заповніть контактні дані для завершення замовлення
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {/* Сводка заказа */}
+        {/* Зведення замовлення */}
         <div className="bg-gray-50 p-4 rounded-lg mb-6">
-          <h4 className="font-medium text-gray-700 mb-3">Сводка заказа</h4>
+          <h4 className="font-medium text-gray-700 mb-3">Зведення замовлення</h4>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span>Количество файлов:</span>
+              <span>Кількість файлів:</span>
               <span className="font-medium">{files.length}</span>
             </div>
             <div className="flex justify-between">
-              <span>Общая стоимость:</span>
+              <span>Загальна вартість:</span>
               <span className="font-bold text-lg text-purple-600">
-                {totalPrice.toLocaleString()} ₽
+                {totalPrice.toLocaleString()} ₴
               </span>
             </div>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Контактная информация */}
+          {/* Контактна інформація */}
           <div className="space-y-4">
             <h4 className="font-medium text-gray-700 flex items-center gap-2">
               <User className="w-4 h-4" />
-              Контактная информация
+              Контактна інформація
             </h4>
             
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Имя *</Label>
+                <Label htmlFor="name">Ім'я *</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
-                  placeholder="Ваше имя"
+                  placeholder="Ваше ім'я"
                   required
                 />
               </div>
@@ -114,7 +114,7 @@ const OrderForm = ({ files, totalPrice, onOrderCreated }: OrderFormProps) => {
                     id="phone"
                     value={formData.phone}
                     onChange={(e) => handleInputChange("phone", e.target.value)}
-                    placeholder="+7 (000) 000-00-00"
+                    placeholder="+38 (000) 000-00-00"
                     className="pl-10"
                     required
                   />
@@ -139,22 +139,22 @@ const OrderForm = ({ files, totalPrice, onOrderCreated }: OrderFormProps) => {
             </div>
           </div>
 
-          {/* Комментарий */}
+          {/* Коментар */}
           <div className="space-y-2">
             <Label htmlFor="comment">
               <MessageSquare className="w-4 h-4 inline mr-2" />
-              Комментарий к заказу
+              Коментар до замовлення
             </Label>
             <Textarea
               id="comment"
               value={formData.comment}
               onChange={(e) => handleInputChange("comment", e.target.value)}
-              placeholder="Дополнительные пожелания или требования к заказу..."
+              placeholder="Додаткові побажання або вимоги до замовлення..."
               rows={3}
             />
           </div>
 
-          {/* Согласие */}
+          {/* Згода */}
           <div className="flex items-start space-x-2">
             <Checkbox
               id="terms"
@@ -162,18 +162,18 @@ const OrderForm = ({ files, totalPrice, onOrderCreated }: OrderFormProps) => {
               onCheckedChange={(checked) => handleInputChange("agreeToTerms", checked as boolean)}
             />
             <Label htmlFor="terms" className="text-sm text-gray-600 leading-relaxed">
-              Я согласен с{" "}
+              Я погоджуюся з{" "}
               <button type="button" className="text-purple-600 hover:underline">
-                условиями оказания услуг
+                умовами надання послуг
               </button>{" "}
-              и{" "}
+              та{" "}
               <button type="button" className="text-purple-600 hover:underline">
-                политикой обработки персональных данных
+                політикою обробки персональних даних
               </button>
             </Label>
           </div>
 
-          {/* Кнопка отправки */}
+          {/* Кнопка відправки */}
           <div className="pt-4">
             <Button
               type="submit"
@@ -184,10 +184,10 @@ const OrderForm = ({ files, totalPrice, onOrderCreated }: OrderFormProps) => {
               {isSubmitting ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Создание заказа...
+                  Створення замовлення...
                 </>
               ) : (
-                `Создать заказ на ${totalPrice.toLocaleString()} ₽`
+                `Створити замовлення на ${totalPrice.toLocaleString()} ₴`
               )}
             </Button>
           </div>

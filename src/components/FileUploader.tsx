@@ -84,15 +84,15 @@ const FileUploader = ({ onFilesUploaded, printType, maxFiles }: FileUploaderProp
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle className="text-2xl text-center">
-          {printType === "single" ? "Загрузите файл" : "Загрузите ваши файлы"}
+          {printType === "single" ? "Завантажте файл" : "Завантажте ваші файли"}
         </CardTitle>
         <CardDescription className="text-center">
           {printType === "single" 
-            ? "Один файл для печати отдельного изделия" 
-            : "Несколько файлов для печати в рулоне"
+            ? "Один файл для друку окремого виробу" 
+            : "Кілька файлів для друку у рулоні"
           }
           <br />
-          Поддерживаются форматы: PDF, PSD, JPG, PNG, GIF
+          Підтримуються формати: PDF, PSD, JPG, PNG, GIF
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -109,11 +109,11 @@ const FileUploader = ({ onFilesUploaded, printType, maxFiles }: FileUploaderProp
         >
           <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <p className="text-lg font-medium text-gray-700 mb-2">
-            Перетащите файлы сюда или нажмите для выбора
+            Перетягніть файли сюди або натисніть для вибору
           </p>
           <p className="text-sm text-gray-500 mb-4">
-            {maxFiles && `Максимум ${maxFiles} файл${maxFiles > 1 ? 'ов' : ''} • `}
-            Максимальный размер файла: 50MB
+            {maxFiles && `Максимум ${maxFiles} файл${maxFiles > 1 ? 'ів' : ''} • `}
+            Максимальний розмір файлу: 50MB
           </p>
           <Button 
             onClick={() => fileInputRef.current?.click()}
@@ -121,7 +121,7 @@ const FileUploader = ({ onFilesUploaded, printType, maxFiles }: FileUploaderProp
             className="hover:bg-orange-50 hover:border-orange-300"
             disabled={maxFiles ? files.length >= maxFiles : false}
           >
-            Выбрать файлы
+            Обрати файли
           </Button>
           <input
             ref={fileInputRef}
@@ -135,13 +135,13 @@ const FileUploader = ({ onFilesUploaded, printType, maxFiles }: FileUploaderProp
 
         {maxFiles && files.length >= maxFiles && (
           <p className="text-sm text-orange-600 text-center mt-2">
-            Достигнуто максимальное количество файлов
+            Досягнуто максимальної кількості файлів
           </p>
         )}
 
         {files.length > 0 && (
           <div className="mt-6">
-            <h4 className="font-medium text-gray-700 mb-3">Загруженные файлы:</h4>
+            <h4 className="font-medium text-gray-700 mb-3">Завантажені файли:</h4>
             <div className="space-y-2">
               {files.map((file, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -170,7 +170,7 @@ const FileUploader = ({ onFilesUploaded, printType, maxFiles }: FileUploaderProp
                 className="bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600"
                 size="lg"
               >
-                Продолжить к расчету стоимости
+                Продовжити до розрахунку вартості
               </Button>
             </div>
           </div>

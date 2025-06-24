@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +11,7 @@ import OrderForm from "@/components/OrderForm";
 
 const Index = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [printType, setPrintType] = useState(""); // "single" или "roll"
+  const [printType, setPrintType] = useState(""); // "single" або "roll"
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [calculatedPrice, setCalculatedPrice] = useState(0);
 
@@ -22,9 +23,9 @@ const Index = () => {
   const handleFilesUploaded = (files: File[]) => {
     setUploadedFiles(files);
     if (printType === "single") {
-      setCurrentStep(3); // Сразу на расчет для одного изделия
+      setCurrentStep(3); // Одразу на розрахунок для одного виробу
     } else {
-      setCurrentStep(3); // На расчет для рулона
+      setCurrentStep(3); // На розрахунок для рулону
     }
   };
 
@@ -63,7 +64,7 @@ const Index = () => {
               PrintCraft Studio
             </h1>
             <div className="text-sm text-gray-600">
-              Профессиональная DTF печать
+              Професійний DTF друк
             </div>
           </div>
         </div>
@@ -73,20 +74,20 @@ const Index = () => {
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-5xl font-extrabold text-gray-900 mb-6">
-            DTF-печать нового поколения
+            DTF-друк нового покоління
           </h2>
           <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto">
-            Выберите тип печати и загружайте ваши дизайны. 
-            Мы предоставим точный расчет стоимости и выполним заказ с высочайшим качеством.
+            Оберіть тип друку та завантажуйте ваші дизайни. 
+            Ми надамо точний розрахунок вартості та виконаємо замовлення з найвищою якістю.
           </p>
           
           {/* Progress Steps */}
           <div className="flex justify-center items-center space-x-6 mb-12">
             {[
-              { step: 1, icon: CheckCircle, label: "Тип печати", active: currentStep >= 1 },
-              { step: 2, icon: Upload, label: "Загрузка файлов", active: currentStep >= 2 },
-              { step: 3, icon: Calculator, label: "Расчет стоимости", active: currentStep >= 3 },
-              { step: 4, icon: ShoppingCart, label: "Оформление заказа", active: currentStep >= 4 },
+              { step: 1, icon: CheckCircle, label: "Тип друку", active: currentStep >= 1 },
+              { step: 2, icon: Upload, label: "Завантаження файлів", active: currentStep >= 2 },
+              { step: 3, icon: Calculator, label: "Розрахунок вартості", active: currentStep >= 3 },
+              { step: 4, icon: ShoppingCart, label: "Оформлення замовлення", active: currentStep >= 4 },
               { step: 5, icon: CheckCircle, label: "Готово", active: currentStep >= 5 },
             ].map(({ step, icon: Icon, label, active }) => (
               <div key={step} className={`flex flex-col items-center ${active ? 'text-orange-600' : 'text-gray-400'}`}>
@@ -122,9 +123,9 @@ const Index = () => {
           {currentStep === 1 && (
             <Card className="max-w-2xl mx-auto">
               <CardHeader>
-                <CardTitle className="text-2xl text-center">Выберите тип печати</CardTitle>
+                <CardTitle className="text-2xl text-center">Оберіть тип друку</CardTitle>
                 <CardDescription className="text-center">
-                  Определите, как будет выполняться печать ваших дизайнов
+                  Визначте, як буде виконуватися друк ваших дизайнів
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -134,8 +135,8 @@ const Index = () => {
                     <Label htmlFor="single" className="cursor-pointer flex items-center gap-4 flex-1">
                       <ImageIcon className="w-8 h-8 text-orange-500" />
                       <div>
-                        <div className="text-lg font-medium">Одно изделие</div>
-                        <div className="text-sm text-gray-500">Отдельная печать одного файла</div>
+                        <div className="text-lg font-medium">Один виріб</div>
+                        <div className="text-sm text-gray-500">Окремий друк одного файлу</div>
                       </div>
                     </Label>
                   </div>
@@ -144,8 +145,8 @@ const Index = () => {
                     <Label htmlFor="roll" className="cursor-pointer flex items-center gap-4 flex-1">
                       <Scroll className="w-8 h-8 text-orange-500" />
                       <div>
-                        <div className="text-lg font-medium">Печать в рулоне</div>
-                        <div className="text-sm text-gray-500">Экономия 20%, несколько файлов в рулоне</div>
+                        <div className="text-lg font-medium">Друк у рулоні</div>
+                        <div className="text-sm text-gray-500">Економія 20%, кілька файлів у рулоні</div>
                       </div>
                     </Label>
                   </div>
@@ -158,7 +159,7 @@ const Index = () => {
                       className="bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600"
                       size="lg"
                     >
-                      Продолжить
+                      Продовжити
                     </Button>
                   </div>
                 )}
@@ -196,18 +197,18 @@ const Index = () => {
                 <div className="flex justify-center mb-4">
                   <CheckCircle className="w-16 h-16 text-green-500" />
                 </div>
-                <CardTitle className="text-2xl text-green-600">Заказ успешно создан!</CardTitle>
+                <CardTitle className="text-2xl text-green-600">Замовлення успішно створено!</CardTitle>
                 <CardDescription className="text-lg">
-                  Вы будете перенаправлены на страницу оплаты
+                  Вас буде перенаправлено на сторінку оплати
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button 
-                  onClick={() => alert('Переход на оплату (пока заглушка)')}
+                  onClick={() => alert('Перехід на оплату (поки заглушка)')}
                   className="bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600"
                   size="lg"
                 >
-                  Перейти к оплате
+                  Перейти до оплати
                 </Button>
               </CardContent>
             </Card>
@@ -215,11 +216,11 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Features - показываем всегда */}
+      {/* Features - показуємо завжди */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h3 className="text-3xl font-bold text-center text-gray-900 mb-12">
-            Почему выбирают PrintCraft Studio?
+            Чому обирають PrintCraft Studio?
           </h3>
           <div className="grid md:grid-cols-3 gap-8">
             <Card className="text-center hover:shadow-lg transition-shadow">
@@ -227,12 +228,12 @@ const Index = () => {
                 <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <Upload className="w-6 h-6 text-orange-600" />
                 </div>
-                <CardTitle>Простая загрузка</CardTitle>
+                <CardTitle>Просте завантаження</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  Поддержка PDF, PSD файлов и отдельных изображений. 
-                  Просто перетащите файлы в область загрузки.
+                  Підтримка PDF, PSD файлів та окремих зображень. 
+                  Просто перетягніть файли в область завантаження.
                 </p>
               </CardContent>
             </Card>
@@ -242,12 +243,12 @@ const Index = () => {
                 <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <Calculator className="w-6 h-6 text-gray-600" />
                 </div>
-                <CardTitle>Точный расчет</CardTitle>
+                <CardTitle>Точний розрахунок</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  Автоматический расчет стоимости на основе размеров, 
-                  количества и сложности дизайна.
+                  Автоматичний розрахунок вартості на основі розмірів, 
+                  кількості та складності дизайну.
                 </p>
               </CardContent>
             </Card>
@@ -257,12 +258,12 @@ const Index = () => {
                 <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <CheckCircle className="w-6 h-6 text-orange-600" />
                 </div>
-                <CardTitle>Высокое качество</CardTitle>
+                <CardTitle>Висока якість</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  Используем современное DTF оборудование для получения 
-                  ярких и долговечных принтов.
+                  Використовуємо сучасне DTF обладнання для отримання 
+                  яскравих та довговічних принтів.
                 </p>
               </CardContent>
             </Card>
