@@ -32,6 +32,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
   const generatePreview = async (file: File): Promise<FilePreview> => {
     const fileType = file.type;
     const fileName = file.name.toLowerCase();
+    const fileSizeMB = file.size / 1024 / 1024;
 
     if (fileType.startsWith('image/')) {
       const preview = URL.createObjectURL(file);
@@ -39,6 +40,11 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
     }
 
     if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
+      // Проверяем размер файла - если больше 10MB, не генерируем предпросмотр
+      if (fileSizeMB > 10) {
+        return { file, preview: '', type: 'pdf', pageCount: 0 };
+      }
+      
       try {
         const arrayBuffer = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -113,6 +119,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
 
   const renderFilePreview = (filePreview: FilePreview) => {
     const { file, preview, type, pageCount } = filePreview;
+    const fileSizeMB = file.size / 1024 / 1024;
 
     return (
       <div className="relative w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
@@ -124,16 +131,31 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
           />
         )}
         
-        {type === 'pdf' && preview && (
+        {type === 'pdf' && (
           <div className="relative w-full h-full">
-            <img 
-              src={preview} 
-              alt={`${file.name} - страница 1`}
-              className="max-w-full max-h-full object-contain rounded-lg mx-auto"
-            />
-            {pageCount && pageCount > 1 && (
-              <div className="absolute top-2 right-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs">
-                {pageCount} стр.
+            {preview ? (
+              <>
+                <img 
+                  src={preview} 
+                  alt={`${file.name} - страница 1`}
+                  className="max-w-full max-h-full object-contain rounded-lg mx-auto"
+                />
+                {pageCount && pageCount > 1 && (
+                  <div className="absolute top-2 right-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs">
+                    {pageCount} стр.
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center text-gray-500 p-4 text-center">
+                <FileText className="w-12 h-12 mb-2" />
+                <span className="text-sm font-medium">PDF файл</span>
+                {fileSizeMB > 10 && (
+                  <span className="text-xs text-orange-600 mt-1">
+                    Файл слишком большой для предпросмотра<br />
+                    ({fileSizeMB.toFixed(1)} MB &gt; 10 MB)
+                  </span>
+                )}
               </div>
             )}
           </div>
@@ -146,7 +168,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
           </div>
         )}
         
-        {!preview && type !== 'psd' && (
+        {!preview && type !== 'psd' && type !== 'pdf' && (
           <div className="flex flex-col items-center justify-center text-gray-500">
             <FileText className="w-12 h-12 mb-2" />
             <span className="text-sm">Не удалось загрузить</span>
