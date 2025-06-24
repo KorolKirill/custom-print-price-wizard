@@ -13,12 +13,14 @@ export interface FileAnalysisResult {
   dimensions: FileDimensions;
   imageData?: Uint8Array;
   hasImageData: boolean;
+  fileSize: number; // размер файла в байтах
 }
 
 /**
  * Анализирует файл и извлекает размеры и данные изображения
  */
 export class FileAnalyzer {
+  private static readonly MAX_PREVIEW_SIZE = 5 * 1024 * 1024; // 5 МБ
   
   /**
    * Получает размеры и данные изображения из файла
@@ -26,6 +28,7 @@ export class FileAnalyzer {
   public static async analyzeFile(file: File): Promise<FileAnalysisResult> {
     const fileType = file.type;
     const fileName = file.name.toLowerCase();
+    const fileSize = file.size;
 
     if (fileType.startsWith('image/')) {
       return this.analyzeImageFile(file);
@@ -42,7 +45,8 @@ export class FileAnalyzer {
     // Fallback для неизвестных форматов
     return {
       dimensions: { width: 10, height: 10 },
-      hasImageData: false
+      hasImageData: false,
+      fileSize
     };
   }
 
@@ -77,7 +81,8 @@ export class FileAnalyzer {
               dpi: dpi
             },
             imageData: new Uint8Array(imageData.data),
-            hasImageData: true
+            hasImageData: true,
+            fileSize: file.size
           });
         } else {
           reject(new Error('Не удалось создать контекст canvas'));
@@ -93,6 +98,8 @@ export class FileAnalyzer {
    * Анализ PDF файлов
    */
   private static async analyzePDFFile(file: File): Promise<FileAnalysisResult> {
+    const shouldExtractImage = file.size <= this.MAX_PREVIEW_SIZE;
+    
     try {
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -105,31 +112,35 @@ export class FileAnalyzer {
       const widthCm = (viewport.width / 72) * 2.54;
       const heightCm = (viewport.height / 72) * 2.54;
 
-      // Пытаемся получить изображение для анализа цветов
+      // Извлекаем изображение только для файлов меньше 5 МБ
       let imageData: Uint8Array | undefined;
       let hasImageData = false;
 
-      try {
-        const scale = 1.5;
-        const scaledViewport = page.getViewport({ scale });
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        
-        if (context) {
-          canvas.height = scaledViewport.height;
-          canvas.width = scaledViewport.width;
-
-          await page.render({
-            canvasContext: context,
-            viewport: scaledViewport,
-          }).promise;
+      if (shouldExtractImage) {
+        try {
+          const scale = 1.5;
+          const scaledViewport = page.getViewport({ scale });
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
           
-          const canvasImageData = context.getImageData(0, 0, canvas.width, canvas.height);
-          imageData = new Uint8Array(canvasImageData.data);
-          hasImageData = true;
+          if (context) {
+            canvas.height = scaledViewport.height;
+            canvas.width = scaledViewport.width;
+
+            await page.render({
+              canvasContext: context,
+              viewport: scaledViewport,
+            }).promise;
+            
+            const canvasImageData = context.getImageData(0, 0, canvas.width, canvas.height);
+            imageData = new Uint8Array(canvasImageData.data);
+            hasImageData = true;
+          }
+        } catch (error) {
+          console.warn('Не удалось извлечь изображение из PDF для анализа цветов:', error);
         }
-      } catch (error) {
-        console.warn('Не удалось извлечь изображение из PDF для анализа цветов:', error);
+      } else {
+        console.log(`PDF файл ${file.name} слишком большой (${(file.size / 1024 / 1024).toFixed(1)} МБ), предпросмотр отключен`);
       }
 
       return {
@@ -140,13 +151,15 @@ export class FileAnalyzer {
           pixelHeight: viewport.height
         },
         imageData,
-        hasImageData
+        hasImageData,
+        fileSize: file.size
       };
     } catch (error) {
       console.error('Ошибка при анализе PDF:', error);
       return {
         dimensions: { width: 21, height: 29.7 }, // A4 по умолчанию
-        hasImageData: false
+        hasImageData: false,
+        fileSize: file.size
       };
     }
   }
@@ -155,6 +168,8 @@ export class FileAnalyzer {
    * Анализ PSD файлов (базовая реализация)
    */
   private static async analyzePSDFile(file: File): Promise<FileAnalysisResult> {
+    const shouldExtractImage = file.size <= this.MAX_PREVIEW_SIZE;
+    
     try {
       const arrayBuffer = await file.arrayBuffer();
       const dataView = new DataView(arrayBuffer);
@@ -172,6 +187,10 @@ export class FileAnalyzer {
         const widthCm = (width / dpi) * 2.54;
         const heightCm = (height / dpi) * 2.54;
 
+        if (!shouldExtractImage) {
+          console.log(`PSD файл ${file.name} слишком большой (${(file.size / 1024 / 1024).toFixed(1)} МБ), предпросмотр отключен`);
+        }
+
         return {
           dimensions: {
             width: Math.round(widthCm * 10) / 10,
@@ -180,7 +199,8 @@ export class FileAnalyzer {
             pixelHeight: height,
             dpi: dpi
           },
-          hasImageData: false // PSD слишком сложен для полного анализа в браузере
+          hasImageData: false, // PSD слишком сложен для полного анализа в браузере
+          fileSize: file.size
         };
       }
     } catch (error) {
@@ -190,7 +210,28 @@ export class FileAnalyzer {
     // Fallback для PSD
     return {
       dimensions: { width: 15, height: 15 },
-      hasImageData: false
+      hasImageData: false,
+      fileSize: file.size
     };
+  }
+
+  /**
+   * Проверяет, нужно ли показывать предпросмотр для файла
+   */
+  public static shouldShowPreview(file: File): boolean {
+    const fileType = file.type;
+    const fileName = file.name.toLowerCase();
+    
+    // Для обычных изображений всегда показываем предпросмотр
+    if (fileType.startsWith('image/')) {
+      return true;
+    }
+    
+    // Для PDF и PSD - только если файл меньше 5 МБ
+    if (fileType === 'application/pdf' || fileName.endsWith('.pdf') || fileName.endsWith('.psd')) {
+      return file.size <= this.MAX_PREVIEW_SIZE;
+    }
+    
+    return false;
   }
 }
