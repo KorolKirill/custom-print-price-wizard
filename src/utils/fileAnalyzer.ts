@@ -76,7 +76,7 @@ export class FileAnalyzer {
               pixelHeight: img.height,
               dpi: dpi
             },
-            imageData: imageData.data,
+            imageData: new Uint8Array(imageData.data),
             hasImageData: true
           });
         } else {
@@ -125,7 +125,7 @@ export class FileAnalyzer {
           }).promise;
           
           const canvasImageData = context.getImageData(0, 0, canvas.width, canvas.height);
-          imageData = canvasImageData.data;
+          imageData = new Uint8Array(canvasImageData.data);
           hasImageData = true;
         }
       } catch (error) {
