@@ -103,7 +103,7 @@ const Index = () => {
       </section>
 
       {/* Main Content */}
-      <section className="py-8 px-4 sm:px-6 lg:px-8">
+      <section className="py-8 px-4 sm:px-6 lg:px-8 min-h-[60vh]">
         <div className="max-w-4xl mx-auto">
           {/* Back Button */}
           {currentStep > 1 && (
@@ -215,62 +215,60 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Features - показываем только на первом шаге */}
-      {currentStep === 1 && (
-        <section className="py-16 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h3 className="text-3xl font-bold text-center text-gray-900 mb-12">
-              Почему выбирают PrintCraft Studio?
-            </h3>
-            <div className="grid md:grid-cols-3 gap-8">
-              <Card className="text-center hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <Upload className="w-6 h-6 text-orange-600" />
-                  </div>
-                  <CardTitle>Простая загрузка</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">
-                    Поддержка PDF, PSD файлов и отдельных изображений. 
-                    Просто перетащите файлы в область загрузки.
-                  </p>
-                </CardContent>
-              </Card>
+      {/* Features - показываем всегда */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h3 className="text-3xl font-bold text-center text-gray-900 mb-12">
+            Почему выбирают PrintCraft Studio?
+          </h3>
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="text-center hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <Upload className="w-6 h-6 text-orange-600" />
+                </div>
+                <CardTitle>Простая загрузка</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  Поддержка PDF, PSD файлов и отдельных изображений. 
+                  Просто перетащите файлы в область загрузки.
+                </p>
+              </CardContent>
+            </Card>
 
-              <Card className="text-center hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <Calculator className="w-6 h-6 text-gray-600" />
-                  </div>
-                  <CardTitle>Точный расчет</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">
-                    Автоматический расчет стоимости на основе размеров, 
-                    количества и сложности дизайна.
-                  </p>
-                </CardContent>
-              </Card>
+            <Card className="text-center hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <Calculator className="w-6 h-6 text-gray-600" />
+                </div>
+                <CardTitle>Точный расчет</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  Автоматический расчет стоимости на основе размеров, 
+                  количества и сложности дизайна.
+                </p>
+              </CardContent>
+            </Card>
 
-              <Card className="text-center hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle className="w-6 h-6 text-orange-600" />
-                  </div>
-                  <CardTitle>Высокое качество</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">
-                    Используем современное DTF оборудование для получения 
-                    ярких и долговечных принтов.
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
+            <Card className="text-center hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="w-6 h-6 text-orange-600" />
+                </div>
+                <CardTitle>Высокое качество</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  Используем современное DTF оборудование для получения 
+                  ярких и долговечных принтов.
+                </p>
+              </CardContent>
+            </Card>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
     </div>
   );
 };

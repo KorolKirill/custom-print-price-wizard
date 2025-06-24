@@ -2,15 +2,14 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+import { Calculator, ArrowRight, FileImage, FileText, Image as ImageIcon } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { Calculator, FileText, Palette, Ruler, Image as ImageIcon } from "lucide-react";
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Настройка worker для PDF.js через локальный файл
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+// Настройка worker для PDF.js
+if (typeof window !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+}
 
 interface PriceCalculatorProps {
   files: File[];
@@ -18,530 +17,278 @@ interface PriceCalculatorProps {
   onPriceCalculated: (price: number) => void;
 }
 
-interface PriceOption {
-  size: string;
-  basePrice: number;
-  description: string;
-}
-
-interface InkCalculation {
-  totalInkUsage: number;
-  colorBreakdown: {
-    cyan: number;
-    magenta: number;
-    yellow: number;
-    black: number;
-    white: number;
-  };
-  estimatedCost: number;
-}
-
-interface FileDimensions {
-  width: number;
-  height: number;
-  size: string;
+interface FilePreview {
+  file: File;
+  preview: string;
+  type: 'image' | 'pdf' | 'psd';
+  pageCount?: number;
 }
 
 const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculatorProps) => {
-  const [selectedSize, setSelectedSize] = useState("");
-  const [quantity, setQuantity] = useState(1);
+  const [previews, setPreviews] = useState<FilePreview[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [totalPrice, setTotalPrice] = useState(0);
-  const [isCalculating, setIsCalculating] = useState(false);
-  const [inkCalculation, setInkCalculation] = useState<InkCalculation | null>(null);
-  const [fileDimensions, setFileDimensions] = useState<FileDimensions | null>(null);
-  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
 
-  // Мок-данные для расчета стоимости
-  const priceOptions: PriceOption[] = [
-    { size: "A6", basePrice: 150, description: "10.5 x 14.8 см" },
-    { size: "A5", basePrice: 280, description: "14.8 x 21 см" },
-    { size: "A4", basePrice: 450, description: "21 x 29.7 см" },
-    { size: "A3", basePrice: 750, description: "29.7 x 42 см" },
-    { size: "custom", basePrice: 300, description: "Индивидуальный размер" },
-    { size: "auto", basePrice: 0, description: "Размер из файла" },
-  ];
+  const generatePreview = async (file: File): Promise<FilePreview> => {
+    const fileType = file.type;
+    const fileName = file.name.toLowerCase();
 
-  // Создание превью для файлов
-  useEffect(() => {
-    const createPreviews = async () => {
-      const urls: string[] = [];
-      
-      for (const file of files) {
-        if (file.type.startsWith('image/')) {
-          urls.push(URL.createObjectURL(file));
-        } else if (file.type === 'application/pdf') {
-          try {
-            const arrayBuffer = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            const page = await pdf.getPage(1);
-            const viewport = page.getViewport({ scale: 0.5 });
-            
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-            if (context) {
-              canvas.height = viewport.height;
-              canvas.width = viewport.width;
-              
-              await page.render({ canvasContext: context, viewport }).promise;
-              urls.push(canvas.toDataURL());
-            }
-          } catch (error) {
-            console.error('Ошибка создания превью PDF:', error);
-            // Добавляем placeholder для PDF
-            urls.push('/placeholder.svg');
-          }
-        } else if (file.name.toLowerCase().endsWith('.psd')) {
-          // Для PSD файлов используем placeholder
-          urls.push('/placeholder.svg');
-        } else {
-          urls.push('/placeholder.svg');
+    if (fileType.startsWith('image/')) {
+      const preview = URL.createObjectURL(file);
+      return { file, preview, type: 'image' };
+    }
+
+    if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const page = await pdf.getPage(1);
+        
+        const scale = 1.5;
+        const viewport = page.getViewport({ scale });
+        
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        if (context) {
+          await page.render({
+            canvasContext: context,
+            viewport: viewport,
+          }).promise;
+          
+          const preview = canvas.toDataURL();
+          return { file, preview, type: 'pdf', pageCount: pdf.numPages };
         }
+      } catch (error) {
+        console.error('Ошибка при обработке PDF:', error);
       }
-      
-      setPreviewUrls(urls);
+    }
+
+    if (fileName.endsWith('.psd')) {
+      // Для PSD файлов показываем иконку, так как браузер не может их отобразить напрямую
+      return { file, preview: '', type: 'psd' };
+    }
+
+    // Fallback для неподдерживаемых форматов
+    return { file, preview: '', type: 'image' };
+  };
+
+  useEffect(() => {
+    const loadPreviews = async () => {
+      setIsLoading(true);
+      const previewPromises = files.map(generatePreview);
+      const loadedPreviews = await Promise.all(previewPromises);
+      setPreviews(loadedPreviews);
+      setIsLoading(false);
     };
 
     if (files.length > 0) {
-      createPreviews();
+      loadPreviews();
     }
-
-    return () => {
-      // Очистка URL объектов
-      previewUrls.forEach(url => {
-        if (url.startsWith('blob:')) {
-          URL.revokeObjectURL(url);
-        }
-      });
-    };
   }, [files]);
 
-  // Компонент для отображения расхода краски в виде колбочек (заглушка)
-  const InkTubes = ({ inkData }: { inkData: InkCalculation }) => {
-    const maxInk = 100; // максимальное значение для визуализации
-    const colors = [
-      { name: 'Cyan', value: inkData.colorBreakdown.cyan, color: 'bg-cyan-400', bgColor: 'bg-cyan-100' },
-      { name: 'Magenta', value: inkData.colorBreakdown.magenta, color: 'bg-pink-400', bgColor: 'bg-pink-100' },
-      { name: 'Yellow', value: inkData.colorBreakdown.yellow, color: 'bg-yellow-400', bgColor: 'bg-yellow-100' },
-      { name: 'Black', value: inkData.colorBreakdown.black, color: 'bg-gray-700', bgColor: 'bg-gray-100' },
-      { name: 'White', value: inkData.colorBreakdown.white, color: 'bg-white border-2 border-gray-300', bgColor: 'bg-gray-50' },
-    ];
+  useEffect(() => {
+    // Заглушка для расчета цены - в будущем будет API запрос
+    const calculatePrice = () => {
+      let basePrice = printType === "roll" ? 150 : 200; // базовая цена
+      let price = basePrice * files.length;
+      
+      // Добавляем случайную вариацию для демонстрации
+      price += Math.floor(Math.random() * 100);
+      
+      setTotalPrice(price);
+    };
+
+    if (files.length > 0) {
+      // Имитируем задержку расчета
+      setTimeout(calculatePrice, 1000);
+    }
+  }, [files, printType]);
+
+  const handleCalculate = () => {
+    onPriceCalculated(totalPrice);
+  };
+
+  const renderFilePreview = (filePreview: FilePreview) => {
+    const { file, preview, type, pageCount } = filePreview;
 
     return (
-      <div className="grid grid-cols-5 gap-3">
-        {colors.map((ink) => {
-          const percentage = Math.min((ink.value / maxInk) * 100, 100);
-          
-          return (
-            <div key={ink.name} className="flex flex-col items-center">
-              <div className={`w-8 h-24 ${ink.bgColor} rounded-lg border-2 border-gray-300 relative overflow-hidden`}>
-                <div 
-                  className={`${ink.color} absolute bottom-0 w-full transition-all duration-300 rounded-b-md`}
-                  style={{ height: `${percentage}%` }}
-                />
-                <div className="absolute top-1 left-1/2 transform -translate-x-1/2 w-4 h-2 bg-gray-400 rounded-sm" />
+      <div className="relative w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
+        {type === 'image' && preview && (
+          <img 
+            src={preview} 
+            alt={file.name}
+            className="max-w-full max-h-full object-contain rounded-lg"
+          />
+        )}
+        
+        {type === 'pdf' && preview && (
+          <div className="relative w-full h-full">
+            <img 
+              src={preview} 
+              alt={`${file.name} - страница 1`}
+              className="max-w-full max-h-full object-contain rounded-lg mx-auto"
+            />
+            {pageCount && pageCount > 1 && (
+              <div className="absolute top-2 right-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs">
+                {pageCount} стр.
               </div>
-              <p className="text-xs font-medium mt-2 text-center">{ink.name}</p>
-              <p className="text-xs text-gray-600">{ink.value} мл</p>
-            </div>
-          );
-        })}
+            )}
+          </div>
+        )}
+        
+        {type === 'psd' && (
+          <div className="flex flex-col items-center justify-center text-gray-500">
+            <FileImage className="w-12 h-12 mb-2" />
+            <span className="text-sm font-medium">PSD файл</span>
+          </div>
+        )}
+        
+        {!preview && type !== 'psd' && (
+          <div className="flex flex-col items-center justify-center text-gray-500">
+            <FileText className="w-12 h-12 mb-2" />
+            <span className="text-sm">Не удалось загрузить</span>
+          </div>
+        )}
+        
+        <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs max-w-32 truncate">
+          {file.name}
+        </div>
       </div>
     );
   };
 
-  const getFileDimensions = async (file: File): Promise<FileDimensions> => {
-    return new Promise(async (resolve) => {
-      if (file.type.startsWith('image/')) {
-        const img = new Image();
-        img.onload = () => {
-          const widthCm = Math.round((img.width / 300) * 2.54 * 10) / 10; // Предполагаем 300 DPI
-          const heightCm = Math.round((img.height / 300) * 2.54 * 10) / 10;
-          
-          // Определяем ближайший стандартный размер
-          let detectedSize = "custom";
-          if (widthCm <= 11 && heightCm <= 15) detectedSize = "A6";
-          else if (widthCm <= 15 && heightCm <= 22) detectedSize = "A5";
-          else if (widthCm <= 22 && heightCm <= 30) detectedSize = "A4";
-          else if (widthCm <= 30 && heightCm <= 43) detectedSize = "A3";
-          
-          resolve({
-            width: widthCm,
-            height: heightCm,
-            size: detectedSize
-          });
-        };
-        img.src = URL.createObjectURL(file);
-      } else if (file.type === 'application/pdf') {
-        try {
-          // Читаем PDF файл
-          const arrayBuffer = await file.arrayBuffer();
-          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-          const page = await pdf.getPage(1); // Берем первую страницу
-          const viewport = page.getViewport({ scale: 1.0 });
-          
-          // Конвертируем размеры из points в сантиметры (1 point = 1/72 inch, 1 inch = 2.54 cm)
-          const widthCm = Math.round((viewport.width / 72) * 2.54 * 10) / 10;
-          const heightCm = Math.round((viewport.height / 72) * 2.54 * 10) / 10;
-          
-          console.log(`PDF размеры: ${widthCm}x${heightCm} см`);
-          
-          // Определяем ближайший стандартный размер
-          let detectedSize = "custom";
-          if (widthCm <= 11 && heightCm <= 15) detectedSize = "A6";
-          else if (widthCm <= 15 && heightCm <= 22) detectedSize = "A5";
-          else if (widthCm <= 22 && heightCm <= 30) detectedSize = "A4";
-          else if (widthCm <= 30 && heightCm <= 43) detectedSize = "A3";
-          
-          resolve({
-            width: widthCm,
-            height: heightCm,
-            size: detectedSize
-          });
-        } catch (error) {
-          console.error('Ошибка при чтении PDF:', error);
-          // Fallback для PDF файлов при ошибке
-          resolve({
-            width: 21,
-            height: 29.7,
-            size: "A4"
-          });
-        }
-      } else {
-        // Для PSD файлов используем приблизительные размеры
-        const fileSizeMB = file.size / (1024 * 1024);
-        let estimatedSize = "A4";
-        if (fileSizeMB < 1) estimatedSize = "A6";
-        else if (fileSizeMB < 3) estimatedSize = "A5";
-        else if (fileSizeMB < 10) estimatedSize = "A4";
-        else estimatedSize = "A3";
-        
-        resolve({
-          width: 21,
-          height: 29.7,
-          size: estimatedSize
-        });
-      }
-    });
-  };
-
-  // Заглушка для расхода краски - данные будут приходить с сервера
-  const getMockInkCalculation = (): InkCalculation => {
-    return {
-      totalInkUsage: 25.5,
-      colorBreakdown: {
-        cyan: 4.2,
-        magenta: 6.8,
-        yellow: 3.1,
-        black: 5.4,
-        white: 6.0
-      },
-      estimatedCost: 45
-    };
-  };
-
-  // Определяем размеры файлов при загрузке
-  useEffect(() => {
-    if (files.length > 0) {
-      getFileDimensions(files[0]).then(dimensions => {
-        setFileDimensions(dimensions);
-        if (printType === "single") {
-          setSelectedSize("auto");
-        }
-      });
-    }
-  }, [files, printType]);
-
-  const calculatePrice = async () => {
-    if ((printType === "single" && !selectedSize) || quantity < 1) return;
-    
-    setIsCalculating(true);
-    
-    // Заглушка для расхода краски
-    setInkCalculation(getMockInkCalculation());
-    
-    setTimeout(() => {
-      let basePrice = 0;
-      
-      if (printType === "single") {
-        if (selectedSize === "auto" && fileDimensions) {
-          const area = fileDimensions.width * fileDimensions.height;
-          basePrice = Math.round(area * 15);
-        } else {
-          const selectedOption = priceOptions.find(option => option.size === selectedSize);
-          if (selectedOption) {
-            basePrice = selectedOption.basePrice;
-          }
-        }
-      } else {
-        // Для рулона - базовая цена за файл
-        basePrice = files.length * 200;
-      }
-      
-      // Корректировка цены в зависимости от типа печати
-      if (printType === "roll") {
-        basePrice = basePrice * 0.8; // Скидка 20% за печать в рулоне
-      }
-      
-      const fileMultiplier = printType === "single" ? 1 : Math.min(files.length * 0.1 + 1, 2);
-      
-      let quantityDiscount = 1;
-      if (quantity >= 10) quantityDiscount = 0.85;
-      else if (quantity >= 5) quantityDiscount = 0.9;
-      else if (quantity >= 3) quantityDiscount = 0.95;
-      
-      const finalPrice = Math.round(basePrice * fileMultiplier * quantity * quantityDiscount);
-      setTotalPrice(finalPrice);
-      setIsCalculating(false);
-    }, 1500);
-  };
-
-  useEffect(() => {
-    if ((printType === "single" && selectedSize && quantity >= 1) || 
-        (printType === "roll" && quantity >= 1)) {
-      calculatePrice();
-    }
-  }, [selectedSize, quantity, files, printType]);
-
-  const handleContinue = () => {
-    onPriceCalculated(totalPrice);
-  };
-
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Левая колонка - параметры */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl flex items-center gap-2">
-                <Calculator className="w-6 h-6" />
-                Расчет стоимости DTF печати
-              </CardTitle>
-              <CardDescription>
-                Тип печати: {printType === "single" ? "Одно изделие" : "Печать в рулоне"}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calculator className="w-6 h-6" />
+            Расчет стоимости печати
+          </CardTitle>
+          <CardDescription>
+            {printType === "roll" ? "Печать в рулоне" : "Печать одного изделия"} • {files.length} файл{files.length > 1 ? (files.length < 5 ? 'а' : 'ов') : ''}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Левая колонка - информация и расчет */}
+            <div className="space-y-6">
               {/* Информация о файлах */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-medium text-gray-700 mb-2 flex items-center gap-2">
-                  <FileText className="w-4 h-4" />
-                  Информация о файлах
-                </h4>
-                <p className="text-sm text-gray-600">
-                  Количество файлов: <span className="font-medium">{files.length}</span>
-                </p>
-                {fileDimensions && printType === "single" && (
-                  <div className="mt-2 flex items-center gap-2">
-                    <Ruler className="w-4 h-4 text-orange-600" />
-                    <p className="text-sm text-orange-600">
-                      Определенный размер: <span className="font-medium">
-                        {fileDimensions.width} x {fileDimensions.height} см ({fileDimensions.size})
-                      </span>
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Расчет краски с колбочками - заглушка */}
-              {inkCalculation && (
-                <div className="bg-gradient-to-br from-blue-50 to-purple-50 p-6 rounded-lg border border-blue-200">
-                  <h4 className="font-medium text-blue-800 mb-4 flex items-center gap-2">
-                    <Palette className="w-4 h-4" />
-                    Расход краски DTF (данные с сервера)
-                  </h4>
-                  
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-sm text-blue-600">Общий расход:</p>
-                        <p className="text-xl font-bold text-blue-800">{inkCalculation.totalInkUsage} мл</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-blue-600">Стоимость краски:</p>
-                        <p className="text-xl font-bold text-blue-800">{inkCalculation.estimatedCost} ₽</p>
-                      </div>
-                      <div className="text-xs text-blue-500">
-                        * Данные получены с сервера
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <p className="text-sm text-blue-600 mb-3">Расход по цветам:</p>
-                      <InkTubes inkData={inkCalculation} />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Выбор размера только для одного изделия */}
-              {printType === "single" && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Загруженные файлы:</h3>
                 <div className="space-y-2">
-                  <Label htmlFor="size">Размер печати</Label>
-                  <Select value={selectedSize} onValueChange={setSelectedSize}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Выберите размер" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {priceOptions.map((option) => (
-                        <SelectItem key={option.size} value={option.size}>
-                          <div className="flex flex-col">
-                            <span className="font-medium">
-                              {option.size === "auto" ? "Авто" : option.size.toUpperCase()}
-                            </span>
-                            <span className="text-xs text-gray-500">{option.description}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              {/* Количество */}
-              <div className="space-y-2">
-                <Label htmlFor="quantity">Количество экземпляров</Label>
-                <Input
-                  id="quantity"
-                  type="number"
-                  min="1"
-                  max="1000"
-                  value={quantity}
-                  onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-                  placeholder="Введите количество"
-                />
-                {quantity >= 3 && (
-                  <p className="text-sm text-green-600">
-                    🎉 Скидка за количество: {quantity >= 10 ? '15%' : quantity >= 5 ? '10%' : '5%'}
-                  </p>
-                )}
-              </div>
-
-              {/* Результат расчета */}
-              {((printType === "single" && selectedSize) || printType === "roll") && (
-                <div className="bg-gradient-to-r from-orange-50 to-gray-50 p-6 rounded-lg border border-orange-200">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-sm text-gray-600">Предварительная стоимость:</p>
-                      <p className="text-3xl font-bold text-orange-600">
-                        {isCalculating ? (
-                          <span className="animate-pulse">Расчет...</span>
+                  {files.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        {file.type.startsWith('image/') ? (
+                          <ImageIcon className="w-5 h-5 text-blue-500" />
+                        ) : file.name.toLowerCase().endsWith('.pdf') ? (
+                          <FileText className="w-5 h-5 text-red-500" />
                         ) : (
-                          `${totalPrice.toLocaleString()} ₽`
+                          <FileImage className="w-5 h-5 text-purple-500" />
                         )}
-                      </p>
-                      {inkCalculation && !isCalculating && (
-                        <p className="text-sm text-gray-500 mt-1">
-                          Включая краску: {inkCalculation.estimatedCost} ₽
-                          {printType === "roll" && " • Скидка за рулон: 20%"}
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right text-sm text-gray-500">
-                      <p>За {quantity} экз.</p>
-                      <p>Тип: {printType === "single" ? "Одно изделие" : "Рулон"}</p>
-                      {printType === "single" && (
-                        <p>Размер: {selectedSize === "auto" && fileDimensions ? 
-                          `${fileDimensions.width}x${fileDimensions.height}см` : 
-                          selectedSize.toUpperCase()}</p>
-                      )}
-                      {inkCalculation && (
-                        <p>Краски: {inkCalculation.totalInkUsage} мл</p>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {totalPrice > 0 && (
-                    <div className="mt-4 pt-4 border-t border-orange-200">
-                      <p className="text-xs text-gray-600 mb-3">
-                        * Цена может быть скорректирована после проверки файлов специалистом
-                      </p>
-                      <Button 
-                        onClick={handleContinue}
-                        className="w-full bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600"
-                        size="lg"
-                        disabled={isCalculating}
-                      >
-                        Оформить заказ
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Правая колонка - предпросмотр файлов */}
-        <div className="lg:col-span-1">
-          <Card className="h-fit">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <ImageIcon className="w-5 h-5" />
-                Предпросмотр файлов
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {previewUrls.length > 0 ? (
-                <div className="space-y-4">
-                  {previewUrls.length === 1 ? (
-                    <div className="relative">
-                      <img 
-                        src={previewUrls[0]} 
-                        alt="Превью файла"
-                        className="w-full h-64 object-cover rounded-lg border border-gray-200"
-                      />
-                      <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
-                        {files[0]?.name.slice(0, 20)}...
+                        <div>
+                          <p className="font-medium">{file.name}</p>
+                          <p className="text-sm text-gray-500">
+                            {(file.size / 1024 / 1024).toFixed(2)} MB
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  ) : (
-                    <Carousel className="w-full">
-                      <CarouselContent>
-                        {previewUrls.map((url, index) => (
-                          <CarouselItem key={index}>
-                            <div className="relative">
-                              <img 
-                                src={url} 
-                                alt={`Превью ${index + 1}`}
-                                className="w-full h-64 object-cover rounded-lg border border-gray-200"
-                              />
-                              <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
-                                {files[index]?.name.slice(0, 20)}...
-                              </div>
-                              <div className="absolute top-2 right-2 bg-orange-600 text-white text-xs px-2 py-1 rounded">
-                                {index + 1} / {files.length}
-                              </div>
-                            </div>
-                          </CarouselItem>
-                        ))}
-                      </CarouselContent>
-                      <CarouselPrevious />
-                      <CarouselNext />
-                    </Carousel>
-                  )}
-                  
-                  <div className="text-sm text-gray-600">
-                    <p className="font-medium">Файлы ({files.length}):</p>
-                    <div className="mt-2 max-h-32 overflow-y-auto space-y-1">
-                      {files.map((file, index) => (
-                        <div key={index} className="text-xs bg-gray-50 p-2 rounded">
-                          {file.name}
-                        </div>
-                      ))}
+                  ))}
+                </div>
+              </div>
+
+              {/* Расчет стоимости */}
+              <div className="p-6 bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg border border-orange-200">
+                <h3 className="text-xl font-bold text-orange-800 mb-4">Расчет стоимости</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-700">Тип печати:</span>
+                    <span className="font-semibold">
+                      {printType === "roll" ? "Печать в рулоне" : "Одно изделие"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-700">Количество файлов:</span>
+                    <span className="font-semibold">{files.length}</span>
+                  </div>
+                  {printType === "roll" && (
+                    <div className="text-sm text-green-600 bg-green-50 p-2 rounded">
+                      💰 Скидка 20% за печать в рулоне
                     </div>
+                  )}
+                  <div className="border-t pt-3 mt-3">
+                    <div className="flex justify-between items-center text-xl">
+                      <span className="font-bold">Итого:</span>
+                      <span className="font-bold text-orange-600">
+                        {totalPrice > 0 ? `${totalPrice} ₽` : 'Рассчитывается...'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Кнопка продолжения */}
+              {totalPrice > 0 && (
+                <Button 
+                  onClick={handleCalculate}
+                  className="w-full bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600"
+                  size="lg"
+                >
+                  Продолжить к оформлению заказа
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Button>
+              )}
+            </div>
+
+            {/* Правая колонка - предпросмотр файлов */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Предпросмотр файлов:</h3>
+              
+              {isLoading ? (
+                <div className="flex items-center justify-center h-48 bg-gray-100 rounded-lg">
+                  <div className="text-center">
+                    <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                    <p className="text-gray-600">Загрузка предпросмотра...</p>
                   </div>
                 </div>
               ) : (
-                <div className="text-center text-gray-500 py-8">
-                  <ImageIcon className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                  <p>Предпросмотр недоступен</p>
+                <div className="relative">
+                  {previews.length === 1 ? (
+                    renderFilePreview(previews[0])
+                  ) : (
+                    <Carousel className="w-full">
+                      <CarouselContent>
+                        {previews.map((filePreview, index) => (
+                          <CarouselItem key={index}>
+                            {renderFilePreview(filePreview)}
+                          </CarouselItem>
+                        ))}
+                      </CarouselContent>
+                      {previews.length > 1 && (
+                        <>
+                          <CarouselPrevious className="left-2" />
+                          <CarouselNext className="right-2" />
+                        </>
+                      )}
+                    </Carousel>
+                  )}
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+
+              {previews.length > 1 && (
+                <div className="text-center text-sm text-gray-600">
+                  Файлов: {previews.length} • Используйте стрелки для навигации
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
