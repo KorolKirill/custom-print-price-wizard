@@ -6,9 +6,11 @@ import { Upload, File, X, Image } from "lucide-react";
 
 interface FileUploaderProps {
   onFilesUploaded: (files: File[]) => void;
+  printType: string;
+  maxFiles?: number;
 }
 
-const FileUploader = ({ onFilesUploaded }: FileUploaderProps) => {
+const FileUploader = ({ onFilesUploaded, printType, maxFiles }: FileUploaderProps) => {
   const [dragActive, setDragActive] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -45,7 +47,12 @@ const FileUploader = ({ onFilesUploaded }: FileUploaderProps) => {
       return validTypes.some(type => file.type === type || file.name.toLowerCase().endsWith('.psd'));
     });
     
-    setFiles(prev => [...prev, ...validFiles]);
+    if (maxFiles) {
+      const filesToAdd = validFiles.slice(0, maxFiles - files.length);
+      setFiles(prev => [...prev, ...filesToAdd].slice(0, maxFiles));
+    } else {
+      setFiles(prev => [...prev, ...validFiles]);
+    }
   };
 
   const removeFile = (index: number) => {
@@ -76,8 +83,15 @@ const FileUploader = ({ onFilesUploaded }: FileUploaderProps) => {
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle className="text-2xl text-center">Загрузите ваши файлы</CardTitle>
+        <CardTitle className="text-2xl text-center">
+          {printType === "single" ? "Загрузите файл" : "Загрузите ваши файлы"}
+        </CardTitle>
         <CardDescription className="text-center">
+          {printType === "single" 
+            ? "Один файл для печати отдельного изделия" 
+            : "Несколько файлов для печати в рулоне"
+          }
+          <br />
           Поддерживаются форматы: PDF, PSD, JPG, PNG, GIF
         </CardDescription>
       </CardHeader>
@@ -85,8 +99,8 @@ const FileUploader = ({ onFilesUploaded }: FileUploaderProps) => {
         <div
           className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
             dragActive 
-              ? 'border-purple-500 bg-purple-50' 
-              : 'border-gray-300 hover:border-purple-400'
+              ? 'border-orange-500 bg-orange-50' 
+              : 'border-gray-300 hover:border-orange-400'
           }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
@@ -98,24 +112,32 @@ const FileUploader = ({ onFilesUploaded }: FileUploaderProps) => {
             Перетащите файлы сюда или нажмите для выбора
           </p>
           <p className="text-sm text-gray-500 mb-4">
+            {maxFiles && `Максимум ${maxFiles} файл${maxFiles > 1 ? 'ов' : ''} • `}
             Максимальный размер файла: 50MB
           </p>
           <Button 
             onClick={() => fileInputRef.current?.click()}
             variant="outline"
-            className="hover:bg-purple-50 hover:border-purple-300"
+            className="hover:bg-orange-50 hover:border-orange-300"
+            disabled={maxFiles ? files.length >= maxFiles : false}
           >
             Выбрать файлы
           </Button>
           <input
             ref={fileInputRef}
             type="file"
-            multiple
+            multiple={!maxFiles || maxFiles > 1}
             accept=".pdf,.psd,.jpg,.jpeg,.png,.gif"
             onChange={handleFileSelect}
             className="hidden"
           />
         </div>
+
+        {maxFiles && files.length >= maxFiles && (
+          <p className="text-sm text-orange-600 text-center mt-2">
+            Достигнуто максимальное количество файлов
+          </p>
+        )}
 
         {files.length > 0 && (
           <div className="mt-6">
@@ -145,7 +167,7 @@ const FileUploader = ({ onFilesUploaded }: FileUploaderProps) => {
             <div className="mt-6 text-center">
               <Button 
                 onClick={handleContinue}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                className="bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600"
                 size="lg"
               >
                 Продолжить к расчету стоимости
