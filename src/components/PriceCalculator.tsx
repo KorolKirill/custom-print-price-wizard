@@ -261,13 +261,21 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
     return totalInkML * inkPricePerML;
   };
 
+  const getFilmCost = () => {
+    if (printType === "roll") {
+      const lengthInMeters = getTotalLength() / 100; // конвертуємо см в метри
+      return lengthInMeters * 35; // 35 грн за 1 метр
+    }
+    return 0; // для одного виробу пленка не рахується
+  };
+
   const getOrderProcessingCost = () => {
     const totalCopies = fileCopies.reduce((sum, fc) => sum + fc.copies, 0);
     return totalCopies * 50; // 50 грн за кожну копію
   };
 
   const getEquipmentCost = () => {
-    return 100; // фіксована вартість 100 грн
+    return 99; // змінена вартість на 99 грн
   };
 
   const handleCalculate = () => {
@@ -706,13 +714,17 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                             <div className="text-xs text-gray-500 mb-2">
                               Формула: {getTotalInkConsumption().toFixed(1)} мл × {(3780/1000).toFixed(2)} ₴/мл
                             </div>
-                            <div className="flex justify-between">
-                              <span>Обробка замовлення:</span>
-                              <span>{getOrderProcessingCost()} ₴</span>
-                            </div>
-                            <div className="text-xs text-gray-500 mb-2">
-                              {fileCopies.reduce((sum, fc) => sum + fc.copies, 0)} шт × 50 ₴/шт
-                            </div>
+                            {printType === "roll" && (
+                              <>
+                                <div className="flex justify-between">
+                                  <span>Плівка:</span>
+                                  <span>{getFilmCost().toFixed(0)} ₴</span>
+                                </div>
+                                <div className="text-xs text-gray-500 mb-2">
+                                  {(getTotalLength() / 100).toFixed(2)} м × 35 ₴/м
+                                </div>
+                              </>
+                            )}
                             <div className="flex justify-between">
                               <span>Робота обладнання:</span>
                               <span>{getEquipmentCost()} ₴</span>
@@ -720,7 +732,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                             <div className="border-t pt-1 mt-1">
                               <div className="flex justify-between font-medium">
                                 <span>Всього:</span>
-                                <span>{(getInkCost() + getOrderProcessingCost() + getEquipmentCost()).toFixed(0)} ₴</span>
+                                <span>{(getInkCost() + getFilmCost() + getEquipmentCost()).toFixed(0)} ₴</span>
                               </div>
                             </div>
                           </div>
