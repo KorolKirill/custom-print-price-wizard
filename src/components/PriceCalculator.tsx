@@ -308,6 +308,114 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                 </div>
               </div>
 
+              {/* DTF Ink Consumption Display */}
+              {printType === "roll" && fileCopies.length > 0 && (
+                <Card className="bg-blue-50 border-blue-200">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-lg text-blue-800 flex items-center gap-2">
+                      🎨 Расход краски DTF
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div>
+                        <div className="text-sm text-gray-600 mb-1">Общий расход:</div>
+                        <div className="text-2xl font-bold text-blue-900">
+                          {getTotalInkConsumption().toFixed(1)} мл
+                        </div>
+                        <div className="text-sm text-gray-600 mt-2">Стоимость краски:</div>
+                        <div className="text-xl font-semibold text-blue-700">
+                          {Math.round(getTotalInkConsumption() * 1.8)} ₽
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="text-sm text-gray-600 mb-3">Расход по цветам:</div>
+                        <div className="flex items-end gap-3 h-16">
+                          {/* Cyan */}
+                          <div className="flex flex-col items-center">
+                            <div 
+                              className="w-8 bg-cyan-400 rounded-t"
+                              style={{ 
+                                height: `${Math.max(8, (fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.cyan * fc.copies, 0) / getTotalInkConsumption()) * 56)}px` 
+                              }}
+                            ></div>
+                            <div className="text-xs text-center mt-1">
+                              <div className="font-medium">Cyan</div>
+                              <div className="text-gray-600">
+                                {fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.cyan * fc.copies, 0).toFixed(1)} мл
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Magenta */}
+                          <div className="flex flex-col items-center">
+                            <div 
+                              className="w-8 bg-pink-400 rounded-t"
+                              style={{ 
+                                height: `${Math.max(8, (fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.magenta * fc.copies, 0) / getTotalInkConsumption()) * 56)}px` 
+                              }}
+                            ></div>
+                            <div className="text-xs text-center mt-1">
+                              <div className="font-medium">Magenta</div>
+                              <div className="text-gray-600">
+                                {fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.magenta * fc.copies, 0).toFixed(1)} мл
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Yellow */}
+                          <div className="flex flex-col items-center">
+                            <div 
+                              className="w-8 bg-yellow-400 rounded-t"
+                              style={{ 
+                                height: `${Math.max(8, (fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.yellow * fc.copies, 0) / getTotalInkConsumption()) * 56)}px` 
+                              }}
+                            ></div>
+                            <div className="text-xs text-center mt-1">
+                              <div className="font-medium">Yellow</div>
+                              <div className="text-gray-600">
+                                {fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.yellow * fc.copies, 0).toFixed(1)} мл
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Black */}
+                          <div className="flex flex-col items-center">
+                            <div 
+                              className="w-8 bg-gray-800 rounded-t"
+                              style={{ 
+                                height: `${Math.max(8, (fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.black * fc.copies, 0) / getTotalInkConsumption()) * 56)}px` 
+                              }}
+                            ></div>
+                            <div className="text-xs text-center mt-1">
+                              <div className="font-medium">Black</div>
+                              <div className="text-gray-600">
+                                {fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.black * fc.copies, 0).toFixed(1)} мл
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* White */}
+                          <div className="flex flex-col items-center">
+                            <div 
+                              className="w-8 bg-gray-300 border border-gray-400 rounded-t"
+                              style={{ height: `${Math.max(8, 80 * 0.15)}px` }}
+                            ></div>
+                            <div className="text-xs text-center mt-1">
+                              <div className="font-medium">White</div>
+                              <div className="text-gray-600">
+                                {(getTotalInkConsumption() * 0.15).toFixed(1)} мл
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Расчет стоимости */}
               <div className="p-6 bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg border border-orange-200">
                 <h3 className="text-xl font-bold text-orange-800 mb-4">Расчет стоимости</h3>
@@ -480,7 +588,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                       Пурпурный (Magenta)
                     </label>
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-magenta-500 rounded"></div>
+                      <div className="w-4 h-4 bg-pink-500 rounded"></div>
                       <Input
                         type="number"
                         min="0"
