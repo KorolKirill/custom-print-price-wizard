@@ -41,6 +41,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
   const [totalPrice, setTotalPrice] = useState(0);
   const [fileCopies, setFileCopies] = useState<FileCopy[]>([]);
   const [selectedFileIndex, setSelectedFileIndex] = useState<number | null>(null);
+  const [previewFileIndex, setPreviewFileIndex] = useState(0);
 
   const generatePreview = async (file: File): Promise<FilePreview> => {
     const fileType = file.type;
@@ -121,6 +122,8 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
       if (printType === "roll") {
         setSelectedFileIndex(0);
       }
+      // Устанавливаем первый файл для предпросмотра
+      setPreviewFileIndex(0);
     }
   }, [files]);
 
@@ -183,7 +186,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
     const fileSizeMB = file.size / 1024 / 1024;
 
     return (
-      <div className="relative w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
+      <div className="relative w-full aspect-square bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
         {type === 'image' && preview && (
           <img 
             src={preview} 
@@ -243,6 +246,13 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
     );
   };
 
+  const handleFileSelect = (index: number) => {
+    setPreviewFileIndex(index);
+    if (printType === "roll") {
+      setSelectedFileIndex(index);
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto">
       <Card>
@@ -267,11 +277,13 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                     <div 
                       key={index} 
                       className={`p-4 rounded-lg cursor-pointer transition-colors ${
-                        printType === "roll" 
-                          ? (selectedFileIndex === index ? "bg-orange-100 border-2 border-orange-300" : "bg-gray-50 hover:bg-gray-100")
-                          : "bg-gray-50"
+                        previewFileIndex === index 
+                          ? "bg-blue-100 border-2 border-blue-300" 
+                          : printType === "roll" && selectedFileIndex === index
+                            ? "bg-orange-100 border-2 border-orange-300"
+                            : "bg-gray-50 hover:bg-gray-100"
                       }`}
-                      onClick={() => printType === "roll" && setSelectedFileIndex(index)}
+                      onClick={() => handleFileSelect(index)}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -298,7 +310,12 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                           </div>
                         )}
                       </div>
-                      {printType === "roll" && selectedFileIndex === index && (
+                      {previewFileIndex === index && (
+                        <div className="mt-2 text-sm text-blue-600">
+                          👁 Отображается в предпросмотре
+                        </div>
+                      )}
+                      {printType === "roll" && selectedFileIndex === index && previewFileIndex !== index && (
                         <div className="mt-2 text-sm text-orange-600">
                           ← Выбран для настройки
                         </div>
@@ -311,10 +328,10 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
 
             {/* Правая колонка - предпросмотр файлов */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Предпросмотр файлов:</h3>
+              <h3 className="text-lg font-semibold">Предпросмотр файла:</h3>
               
               {isLoading ? (
-                <div className="flex items-center justify-center h-48 bg-gray-100 rounded-lg">
+                <div className="flex items-center justify-center aspect-square bg-gray-100 rounded-lg">
                   <div className="text-center">
                     <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
                     <p className="text-gray-600">Загрузка предпросмотра...</p>
@@ -322,31 +339,13 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                 </div>
               ) : (
                 <div className="relative">
-                  {previews.length === 1 ? (
-                    renderFilePreview(previews[0])
-                  ) : (
-                    <Carousel className="w-full">
-                      <CarouselContent>
-                        {previews.map((filePreview, index) => (
-                          <CarouselItem key={index}>
-                            {renderFilePreview(filePreview)}
-                          </CarouselItem>
-                        ))}
-                      </CarouselContent>
-                      {previews.length > 1 && (
-                        <>
-                          <CarouselPrevious className="left-2" />
-                          <CarouselNext className="right-2" />
-                        </>
-                      )}
-                    </Carousel>
-                  )}
+                  {previews[previewFileIndex] && renderFilePreview(previews[previewFileIndex])}
                 </div>
               )}
 
               {previews.length > 1 && (
                 <div className="text-center text-sm text-gray-600">
-                  Файлов: {previews.length} • Используйте стрелки для навигации
+                  Файл {previewFileIndex + 1} из {previews.length} • Нажмите на файл слева для просмотра
                 </div>
               )}
             </div>
