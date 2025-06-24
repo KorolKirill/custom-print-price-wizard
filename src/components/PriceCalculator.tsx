@@ -28,6 +28,7 @@ interface FilePreview {
 interface FileCopy {
   file: File;
   copies: number;
+  length: number; // Фіксована довжина для кожного файлу
   inkConsumption: {
     cyan: number;
     magenta: number;
@@ -107,10 +108,11 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
 
     if (files.length > 0) {
       loadPreviews();
-      // Ініціалізуємо кількість копій та витрати фарби для кожного файлу
+      // Ініціалізуємо кількість копій та витрати чорнила для кожного файлу
       const initialFileCopies = files.map(file => ({
         file,
         copies: 1,
+        length: Math.random() * 22 + 8, // Генеруємо фіксовану довжину один раз
         inkConsumption: {
           cyan: Math.floor(Math.random() * 20) + 5,
           magenta: Math.floor(Math.random() * 20) + 5,
@@ -129,16 +131,27 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
   }, [files]);
 
   useEffect(() => {
-    // Заглушка для розрахунку ціни
+    // Розрахунок ціни з урахуванням скидок
     const calculatePrice = () => {
       let basePrice = printType === "roll" ? 150 : 200;
       
       if (printType === "roll") {
-        // Для рулону рахуємо з урахуванням кількості копій
+        // Для рулону рахуємо з урахуванням кількості копій та скидок за довжиною
         const totalCopies = fileCopies.reduce((sum, fc) => sum + fc.copies, 0);
+        const totalLength = getTotalLength();
+        
         let price = basePrice * totalCopies;
+        
+        // Застосовуємо скидки за довжиною
+        const lengthInMeters = totalLength / 100; // конвертуємо см в метри
+        if (lengthInMeters >= 10) {
+          price *= 0.9; // 10% знижка
+        } else if (lengthInMeters >= 5) {
+          price *= 0.95; // 5% знижка
+        }
+        
         price += Math.floor(Math.random() * 100);
-        setTotalPrice(price);
+        setTotalPrice(Math.round(price));
       } else {
         let price = basePrice * files.length;
         price += Math.floor(Math.random() * 100);
@@ -180,10 +193,15 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
 
   const getTotalLength = () => {
     return fileCopies.reduce((total, fc) => {
-      // Генеруємо випадкову довжину для кожного файлу (від 8 до 30 см)
-      const fileLength = Math.random() * 22 + 8;
-      return total + (fileLength * fc.copies);
+      return total + (fc.length * fc.copies);
     }, 0);
+  };
+
+  const getDiscountPercentage = () => {
+    const lengthInMeters = getTotalLength() / 100;
+    if (lengthInMeters >= 10) return 10;
+    if (lengthInMeters >= 5) return 5;
+    return 0;
   };
 
   const handleCalculate = () => {
@@ -407,7 +425,10 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                       Розмір файлу
                     </label>
                     <div className="text-lg font-semibold text-gray-800">
-                      {(Math.random() * 20 + 10).toFixed(1)} × {(Math.random() * 15 + 8).toFixed(1)} см
+                      {fileCopies[selectedFileIndex] && fileCopies[selectedFileIndex].length ? 
+                        `${(Math.random() * 15 + 8).toFixed(1)} × ${fileCopies[selectedFileIndex].length.toFixed(1)} см` : 
+                        'Розраховується...'
+                      }
                     </div>
                   </div>
                 </div>
@@ -548,20 +569,16 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                           <h4 className="font-medium">Знижки за довжиною:</h4>
                           <div className="text-sm space-y-1">
                             <div className="flex justify-between">
-                              <span>До 1 метра:</span>
+                              <span>До 5 метрів:</span>
                               <span className="text-gray-600">Базова ціна</span>
                             </div>
                             <div className="flex justify-between">
-                              <span>1-3 метри:</span>
+                              <span>5-10 метрів:</span>
+                              <span className="text-green-600">-5%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Понад 10 метрів:</span>
                               <span className="text-green-600">-10%</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>3-5 метрів:</span>
-                              <span className="text-green-600">-15%</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Понад 5 метрів:</span>
-                              <span className="text-green-600">-20%</span>
                             </div>
                           </div>
                         </div>
@@ -569,7 +586,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                     </Popover>
                   </span>
                   <span className="font-semibold">
-                    {getTotalLength().toFixed(1)} см
+                    {getTotalLength().toFixed(1)} см ({(getTotalLength() / 100).toFixed(2)} м)
                   </span>
                 </div>
               ) : (
@@ -578,18 +595,18 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                   <span className="font-semibold">{files.length}</span>
                 </div>
               )}
+              {printType === "roll" && getDiscountPercentage() > 0 && (
+                <div className="text-sm text-green-600 bg-green-50 p-2 rounded">
+                  💰 Знижка {getDiscountPercentage()}% за довжину
+                </div>
+              )}
               {printType === "roll" && (
-                <>
-                  <div className="text-sm text-green-600 bg-green-50 p-2 rounded">
-                    💰 Знижка 20% за друк у рулоні
-                  </div>
-                  <div className="flex justify-between items-center pt-2 border-t">
-                    <span className="text-gray-700 font-medium">Загальні витрати чорнил:</span>
-                    <span className="font-bold text-blue-600">
-                      {getTotalInkConsumption().toFixed(1)} мл
-                    </span>
-                  </div>
-                </>
+                <div className="flex justify-between items-center pt-2 border-t">
+                  <span className="text-gray-700 font-medium">Загальні витрати чорнил:</span>
+                  <span className="font-bold text-blue-600">
+                    {getTotalInkConsumption().toFixed(1)} мл
+                  </span>
+                </div>
               )}
               <div className="border-t pt-3 mt-3">
                 <div className="flex justify-between items-center text-xl">
