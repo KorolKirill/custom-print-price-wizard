@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -60,11 +59,15 @@ const Index = () => {
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">
-              PrintCraft Studio
-            </h1>
-            <div className="text-sm text-gray-600">
-              Професійний DTF друк
+            <div className="flex items-center gap-4">
+              <img 
+                src="/lovable-uploads/edb4a1fa-34c4-40e2-b7e1-95d2736fce3c.png" 
+                alt="FUTBOSS Logo" 
+                className="h-12 w-auto"
+              />
+            </div>
+            <div className="text-lg font-semibold text-gray-800">
+              +380971162542
             </div>
           </div>
         </div>
