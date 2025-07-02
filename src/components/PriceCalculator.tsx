@@ -11,15 +11,11 @@ import * as pdfjsLib from 'pdfjs-dist';
 import DTFInkCalculator, { ColorAnalysis, InkUsage } from '@/utils/dtfInkCalculator';
 import { FileAnalyzer, FileAnalysisResult } from '@/utils/fileAnalyzer';
 
-// Настройка worker для PDF.js с fallback
+// Настройка PDF.js без worker'а для простоты
 if (typeof window !== 'undefined') {
-  try {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
-    console.log('PDF.js worker настроен на локальный файл:', pdfjsLib.GlobalWorkerOptions.workerSrc);
-  } catch (error) {
-    console.warn('Не удалось настроить worker, используем fallback без worker');
-    pdfjsLib.GlobalWorkerOptions.workerSrc = '';
-  }
+  // Отключаем worker полностью для стабильной работы
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+  console.log('PDF.js настроен без worker для стабильной работы');
 }
 
 interface PriceCalculatorProps {
@@ -96,58 +92,52 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
       }
       
       try {
-        console.log('Начинаем обработку PDF файла:', file.name, 'размер:', fileSizeMB.toFixed(2), 'MB');
+        console.log('Начинаем простую обработку PDF:', file.name);
         
         const arrayBuffer = await file.arrayBuffer();
-        console.log('ArrayBuffer получен, размер:', arrayBuffer.byteLength);
+        console.log('ArrayBuffer получен');
         
-        const loadingTask = pdfjsLib.getDocument({ 
+        // Простая загрузка без сложных настроек
+        const pdf = await pdfjsLib.getDocument({
           data: arrayBuffer,
-          useWorkerFetch: false,
-          isEvalSupported: false,
-          useSystemFonts: true
-        });
+          verbosity: 0 // Отключаем лишние логи
+        }).promise;
         
-        console.log('Загружаем PDF документ...');
-        const pdf = await loadingTask.promise;
-        console.log('PDF загружен успешно, страниц:', pdf.numPages);
+        console.log('PDF загружен, страниц:', pdf.numPages);
         
         const page = await pdf.getPage(1);
-        console.log('Первая страница получена');
+        console.log('Получена первая страница');
         
-        const scale = 1.2;
+        const scale = 1.0; // Уменьшаем scale для быстрой работы
         const viewport = page.getViewport({ scale });
-        console.log('Viewport создан:', viewport.width, 'x', viewport.height);
         
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
         
         if (!context) {
-          console.error('Не удалось получить контекст canvas');
+          console.log('Нет контекста canvas, показываем иконку');
           return { file, preview: '', type: 'pdf', pageCount: pdf.numPages };
         }
         
         canvas.height = viewport.height;
         canvas.width = viewport.width;
-        console.log('Canvas настроен:', canvas.width, 'x', canvas.height);
 
-        const renderContext = {
+        await page.render({
           canvasContext: context,
           viewport: viewport,
-        };
-
-        console.log('Начинаем рендеринг страницы...');
-        await page.render(renderContext).promise;
-        console.log('Страница отрендерена успешно');
+        }).promise;
         
-        const preview = canvas.toDataURL('image/jpeg', 0.8);
-        console.log('DataURL создан, длина:', preview.length);
+        console.log('Страница отрендерена, создаем изображение');
+        
+        // Создаем jpeg для лучшей производительности
+        const preview = canvas.toDataURL('image/jpeg', 0.7);
+        console.log('Превью PDF создано успешно');
         
         return { file, preview, type: 'pdf', pageCount: pdf.numPages };
         
       } catch (error) {
-        console.error('Ошибка при обработке PDF:', error);
-        console.error('Детали ошибки:', error.message, error.stack);
+        console.log('Ошибка PDF, показываем иконку:', error.message);
+        // Возвращаем без превью - просто иконку
         return { file, preview: '', type: 'pdf', pageCount: 0 };
       }
     }
