@@ -91,28 +91,43 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
       
       try {
         const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const loadingTask = pdfjsLib.getDocument({ 
+          data: arrayBuffer,
+          cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/cmaps/',
+          cMapPacked: true
+        });
+        
+        const pdf = await loadingTask.promise;
         const page = await pdf.getPage(1);
         
-        const scale = 1.5;
+        const scale = 1.2;
         const viewport = page.getViewport({ scale });
         
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
+        
+        if (!context) {
+          console.error('Не вдалося отримати контекст canvas');
+          return { file, preview: '', type: 'pdf', pageCount: pdf.numPages };
+        }
+        
         canvas.height = viewport.height;
         canvas.width = viewport.width;
 
-        if (context) {
-          await page.render({
-            canvasContext: context,
-            viewport: viewport,
-          }).promise;
-          
-          const preview = canvas.toDataURL();
-          return { file, preview, type: 'pdf', pageCount: pdf.numPages };
-        }
+        const renderContext = {
+          canvasContext: context,
+          viewport: viewport,
+        };
+
+        await page.render(renderContext).promise;
+        
+        const preview = canvas.toDataURL('image/jpeg', 0.8);
+        return { file, preview, type: 'pdf', pageCount: pdf.numPages };
+        
       } catch (error) {
         console.error('Помилка при обробці PDF:', error);
+        // Возвращаем информацию о файле без превью
+        return { file, preview: '', type: 'pdf', pageCount: 0 };
       }
     }
 
