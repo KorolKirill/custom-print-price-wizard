@@ -373,9 +373,16 @@ const Index = () => {
           </div>
 
           <div className="space-y-16 lg:space-y-24">
-            {/* Block 1 - Text Left, Image Right */}
+            {/* Block 1 - Image Left, Text Right */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-              <div className="space-y-6 animate-fade-in lg:order-1">
+              <div className="animate-fade-in">
+                <img 
+                  src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=600&h=400&fit=crop&crop=center" 
+                  alt="Щоденна робота та швидкі відправки" 
+                  className="w-full h-80 lg:h-96 object-cover rounded-2xl shadow-lg hover-scale"
+                />
+              </div>
+              <div className="space-y-6 animate-fade-in">
                 <h4 className="text-2xl lg:text-3xl font-bold text-gray-900">
                   Щоденна робота
                 </h4>
@@ -390,13 +397,6 @@ const Index = () => {
                   </div>
                   <span className="text-gray-700 font-medium">Відправка день в день</span>
                 </div>
-              </div>
-              <div className="animate-fade-in lg:order-2">
-                <img 
-                  src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=600&h=400&fit=crop&crop=center" 
-                  alt="Щоденна робота та швидкі відправки" 
-                  className="w-full h-80 lg:h-96 object-cover rounded-2xl shadow-lg hover-scale"
-                />
               </div>
             </div>
 
@@ -456,16 +456,9 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Block 4 - Image Left, Text Right */}
+            {/* Block 4 - Text Left, Image Right */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-              <div className="animate-fade-in">
-                <img 
-                  src="https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=600&h=400&fit=crop&crop=center" 
-                  alt="Перевірка макетів нашими дизайнерами" 
-                  className="w-full h-80 lg:h-96 object-cover rounded-2xl shadow-lg hover-scale"
-                />
-              </div>
-              <div className="space-y-6 animate-fade-in">
+              <div className="space-y-6 animate-fade-in lg:order-1">
                 <h4 className="text-2xl lg:text-3xl font-bold text-gray-900">
                   Перевірка макетів
                 </h4>
@@ -481,11 +474,25 @@ const Index = () => {
                   <span className="text-gray-700 font-medium">Кожен файл перевіряє наш дизайнер</span>
                 </div>
               </div>
+              <div className="animate-fade-in lg:order-2">
+                <img 
+                  src="https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=600&h=400&fit=crop&crop=center" 
+                  alt="Перевірка макетів нашими дизайнерами" 
+                  className="w-full h-80 lg:h-96 object-cover rounded-2xl shadow-lg hover-scale"
+                />
+              </div>
             </div>
 
-            {/* Block 5 - Text Left, Image Right */}
+            {/* Block 5 - Image Left, Text Right */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-              <div className="space-y-6 animate-fade-in lg:order-1">
+              <div className="animate-fade-in">
+                <img 
+                  src="https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?w=600&h=400&fit=crop&crop=center" 
+                  alt="Точний розрахунок вартості друку" 
+                  className="w-full h-80 lg:h-96 object-cover rounded-2xl shadow-lg hover-scale"
+                />
+              </div>
+              <div className="space-y-6 animate-fade-in">
                 <h4 className="text-2xl lg:text-3xl font-bold text-gray-900">
                   Унікальний розрахунок вартості
                 </h4>
@@ -500,13 +507,6 @@ const Index = () => {
                   </div>
                   <span className="text-gray-700 font-medium">Оплата лише за використаний простір</span>
                 </div>
-              </div>
-              <div className="animate-fade-in lg:order-2">
-                <img 
-                  src="https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?w=600&h=400&fit=crop&crop=center" 
-                  alt="Точний розрахунок вартості друку" 
-                  className="w-full h-80 lg:h-96 object-cover rounded-2xl shadow-lg hover-scale"
-                />
               </div>
             </div>
           </div>
