@@ -9,6 +9,7 @@ import { formatInTimeZone } from "date-fns-tz";
 import FileUploader from "@/components/FileUploader";
 import PriceCalculator from "@/components/PriceCalculator";
 import OrderForm from "@/components/OrderForm";
+import Footer from "@/components/Footer";
 
 const Index = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -413,6 +414,9 @@ const Index = () => {
           </div>
         </div>
       </section>
+      
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };
