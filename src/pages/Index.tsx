@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Upload, Calculator, ShoppingCart, CheckCircle, Image as ImageIcon, Scroll, ArrowLeft, Send, Instagram } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Upload, Calculator, ShoppingCart, CheckCircle, Image as ImageIcon, Scroll, ArrowLeft, Send, Instagram, Phone } from "lucide-react";
 import { formatInTimeZone } from "date-fns-tz";
 import FileUploader from "@/components/FileUploader";
 import PriceCalculator from "@/components/PriceCalculator";
@@ -75,7 +76,8 @@ const Index = () => {
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
+          {/* Desktop Header */}
+          <div className="hidden md:flex items-center justify-between">
             <div className="flex items-center gap-4">
               <img 
                 src="/lovable-uploads/edb4a1fa-34c4-40e2-b7e1-95d2736fce3c.png" 
@@ -113,8 +115,67 @@ const Index = () => {
               </div>
             </div>
           </div>
+          
+          {/* Mobile Header */}
+          <div className="md:hidden flex justify-center">
+            <img 
+              src="/lovable-uploads/edb4a1fa-34c4-40e2-b7e1-95d2736fce3c.png" 
+              alt="FUTBOSS Logo" 
+              className="h-12 w-auto"
+            />
+          </div>
         </div>
       </header>
+      
+      {/* Mobile Contact Button */}
+      <div className="md:hidden fixed bottom-6 right-6 z-50">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button 
+              size="lg"
+              className="bg-orange-600 hover:bg-orange-700 text-white rounded-full h-16 w-16 shadow-lg"
+            >
+              <Phone className="w-6 h-6" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80 mr-4" side="top">
+            <div className="space-y-4">
+              <h4 className="font-semibold text-lg">Контакти</h4>
+              <div className="space-y-3">
+                <div>
+                  <div className="text-lg font-semibold text-gray-800">
+                    +380971162542
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    <div>Працюємо кожного дня.</div>
+                    <div>Пишіть, дзвоніть 9.00-18.00</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 pt-2">
+                  <a 
+                    href="https://t.me/managerUUA" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-gray-600 hover:text-orange-600 transition-colors"
+                  >
+                    <Send className="w-5 h-5" />
+                    <span className="text-sm">Telegram</span>
+                  </a>
+                  <a 
+                    href="https://www.instagram.com/futboss.ua/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-gray-600 hover:text-orange-600 transition-colors"
+                  >
+                    <Instagram className="w-5 h-5" />
+                    <span className="text-sm">Instagram</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
 
       {/* Announcement Banner */}
       {showAnnouncementBanner && (
