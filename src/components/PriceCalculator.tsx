@@ -11,12 +11,8 @@ import * as pdfjsLib from 'pdfjs-dist';
 import DTFInkCalculator, { ColorAnalysis, InkUsage } from '@/utils/dtfInkCalculator';
 import { FileAnalyzer, FileAnalysisResult } from '@/utils/fileAnalyzer';
 
-// Настройка PDF.js без worker'а для простоты
-if (typeof window !== 'undefined') {
-  // Отключаем worker полностью для стабильной работы
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '';
-  console.log('PDF.js настроен без worker для стабильной работы');
-}
+// Настройка worker (обязательно!)
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 interface PriceCalculatorProps {
   files: File[];
@@ -92,52 +88,28 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
       }
       
       try {
-        console.log('Начинаем простую обработку PDF:', file.name);
-        
-        const arrayBuffer = await file.arrayBuffer();
-        console.log('ArrayBuffer получен');
-        
-        // Простая загрузка без сложных настроек
-        const pdf = await pdfjsLib.getDocument({
-          data: arrayBuffer,
-          verbosity: 0 // Отключаем лишние логи
-        }).promise;
-        
-        console.log('PDF загружен, страниц:', pdf.numPages);
-        
+        const pdf = await pdfjsLib.getDocument(URL.createObjectURL(file)).promise;
         const page = await pdf.getPage(1);
-        console.log('Получена первая страница');
-        
-        const scale = 1.0; // Уменьшаем scale для быстрой работы
-        const viewport = page.getViewport({ scale });
         
         const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
+        const context = canvas.getContext('2d')!;
         
-        if (!context) {
-          console.log('Нет контекста canvas, показываем иконку');
-          return { file, preview: '', type: 'pdf', pageCount: pdf.numPages };
-        }
-        
+        const viewport = page.getViewport({ scale: 1.5 });
         canvas.height = viewport.height;
         canvas.width = viewport.width;
-
-        await page.render({
+        
+        const renderContext = {
           canvasContext: context,
-          viewport: viewport,
-        }).promise;
+          viewport: viewport
+        };
         
-        console.log('Страница отрендерена, создаем изображение');
-        
-        // Создаем jpeg для лучшей производительности
-        const preview = canvas.toDataURL('image/jpeg', 0.7);
-        console.log('Превью PDF создано успешно');
+        await page.render(renderContext).promise;
+        const preview = canvas.toDataURL('image/jpeg', 0.8);
         
         return { file, preview, type: 'pdf', pageCount: pdf.numPages };
         
       } catch (error) {
-        console.log('Ошибка PDF, показываем иконку:', error.message);
-        // Возвращаем без превью - просто иконку
+        console.error('Error rendering PDF:', error);
         return { file, preview: '', type: 'pdf', pageCount: 0 };
       }
     }

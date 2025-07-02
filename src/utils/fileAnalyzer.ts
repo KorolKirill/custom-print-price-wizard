@@ -1,10 +1,7 @@
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Настройка PDF.js без worker для стабильной работы
-if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '';
-  console.log('PDF.js в fileAnalyzer настроен без worker');
-}
+// Настройка worker (обязательно!)
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 export interface FileDimensions {
   width: number;  // в см
@@ -113,12 +110,12 @@ export class FileAnalyzer {
       const arrayBuffer = await file.arrayBuffer();
       console.log('PDF ArrayBuffer создан, размер:', arrayBuffer.byteLength);
       
-      const loadingTask = pdfjsLib.getDocument({ 
+      const pdf = await pdfjsLib.getDocument({ 
         data: arrayBuffer,
-        verbosity: 0 // Отключаем лишние логи PDF.js
-      });
+        verbosity: 0
+      }).promise;
       
-      const pdf = await loadingTask.promise;
+      
       console.log(`PDF загружен, количество страниц: ${pdf.numPages}`);
       
       const page = await pdf.getPage(1);
