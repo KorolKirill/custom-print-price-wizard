@@ -469,8 +469,8 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                        }`}
                        onClick={() => handleFileSelect(index)}
                      >
-                       <div className="flex items-start justify-between gap-3">
-                         <div className="flex items-start gap-3 min-w-0 flex-1">
+                       <div className="space-y-3">
+                         <div className="flex items-start gap-3">
                            <div className="flex-shrink-0 mt-0.5">
                              {file.type.startsWith('image/') ? (
                                <ImageIcon className="w-4 h-4 lg:w-5 lg:h-5 text-blue-500" />
@@ -481,7 +481,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                              )}
                            </div>
                            <div className="min-w-0 flex-1">
-                             <p className="font-medium text-sm lg:text-base truncate">{file.name}</p>
+                             <p className="font-medium text-sm lg:text-base break-words">{file.name}</p>
                              <div className="text-xs lg:text-sm text-gray-500 space-y-1">
                                <div>{(file.size / 1024 / 1024).toFixed(2)} MB</div>
                                {fileCopies[index] && (
@@ -492,25 +492,29 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                              </div>
                            </div>
                          </div>
+                         
                          {fileCopies[index] && (
-                           <div className="text-right flex-shrink-0">
-                             <p className="text-xs lg:text-sm text-gray-600">Копій: {fileCopies[index].copies}</p>
-                             <p className="text-xs text-blue-600">
+                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-2 border-t border-gray-200">
+                             <div className="text-xs lg:text-sm text-gray-600">
+                               Копій: {fileCopies[index].copies}
+                             </div>
+                             <div className="text-xs text-blue-600">
                                {((fileCopies[index].inkConsumption.cyan + fileCopies[index].inkConsumption.magenta + fileCopies[index].inkConsumption.yellow + fileCopies[index].inkConsumption.black + fileCopies[index].inkConsumption.white) * fileCopies[index].copies).toFixed(1)} мл
-                             </p>
+                             </div>
+                           </div>
+                         )}
+                         
+                         {previewFileIndex === index && (
+                           <div className="text-xs lg:text-sm text-blue-600 flex items-center gap-2">
+                             👁 Відображається у попередньому перегляді
+                           </div>
+                         )}
+                         {selectedFileIndex === index && previewFileIndex !== index && (
+                           <div className="text-xs lg:text-sm text-orange-600">
+                             ← Обрано для налаштування
                            </div>
                          )}
                        </div>
-                       {previewFileIndex === index && (
-                         <div className="mt-2 text-xs lg:text-sm text-blue-600">
-                           👁 Відображається у попередньому перегляді
-                         </div>
-                       )}
-                       {selectedFileIndex === index && previewFileIndex !== index && (
-                         <div className="mt-2 text-xs lg:text-sm text-orange-600">
-                           ← Обрано для налаштування
-                         </div>
-                       )}
                      </div>
                    ))}
                  </div>
@@ -652,83 +656,89 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                   
                    <div>
                      <div className="text-sm text-gray-600 mb-3">Витрати за кольорами:</div>
-                     <div className="flex items-end gap-1 sm:gap-2 lg:gap-3 h-12 sm:h-14 lg:h-16 overflow-x-auto">
-                       {/* Cyan */}
-                       <div className="flex flex-col items-center min-w-0 flex-shrink-0">
-                         <div 
-                           className="w-6 sm:w-7 lg:w-8 bg-cyan-400 rounded-t"
-                           style={{ 
-                             height: `${Math.max(6, (fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.cyan * fc.copies, 0) / getTotalInkConsumption()) * 40)}px` 
-                           }}
-                         ></div>
-                         <div className="text-xs text-center mt-1 max-w-16">
-                           <div className="font-medium text-xs leading-tight">Блакитний</div>
-                           <div className="text-gray-600 text-xs">
-                             {fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.cyan * fc.copies, 0).toFixed(1)} мл
+                     <div className="flex flex-wrap items-end gap-2 lg:gap-3">
+                       {/* Первая строка - первые 3 цвета */}
+                       <div className="flex items-end gap-2 lg:gap-3 w-full justify-center sm:justify-start sm:w-auto">
+                         {/* Cyan */}
+                         <div className="flex flex-col items-center">
+                           <div 
+                             className="w-6 sm:w-7 lg:w-8 bg-cyan-400 rounded-t"
+                             style={{ 
+                               height: `${Math.max(6, (fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.cyan * fc.copies, 0) / getTotalInkConsumption()) * 40)}px` 
+                             }}
+                           ></div>
+                           <div className="text-xs text-center mt-1 max-w-16">
+                             <div className="font-medium text-xs leading-tight">Блакитний</div>
+                             <div className="text-gray-600 text-xs">
+                               {fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.cyan * fc.copies, 0).toFixed(1)} мл
+                             </div>
+                           </div>
+                         </div>
+                         
+                         {/* Magenta */}
+                         <div className="flex flex-col items-center">
+                           <div 
+                             className="w-6 sm:w-7 lg:w-8 bg-pink-400 rounded-t"
+                             style={{ 
+                               height: `${Math.max(6, (fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.magenta * fc.copies, 0) / getTotalInkConsumption()) * 40)}px` 
+                             }}
+                           ></div>
+                           <div className="text-xs text-center mt-1 max-w-16">
+                             <div className="font-medium text-xs leading-tight">Пурпурний</div>
+                             <div className="text-gray-600 text-xs">
+                               {fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.magenta * fc.copies, 0).toFixed(1)} мл
+                             </div>
+                           </div>
+                         </div>
+                         
+                         {/* Yellow */}
+                         <div className="flex flex-col items-center">
+                           <div 
+                             className="w-6 sm:w-7 lg:w-8 bg-yellow-400 rounded-t"
+                             style={{ 
+                               height: `${Math.max(6, (fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.yellow * fc.copies, 0) / getTotalInkConsumption()) * 40)}px` 
+                             }}
+                           ></div>
+                           <div className="text-xs text-center mt-1 max-w-16">
+                             <div className="font-medium text-xs leading-tight">Жовтий</div>
+                             <div className="text-gray-600 text-xs">
+                               {fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.yellow * fc.copies, 0).toFixed(1)} мл
+                             </div>
                            </div>
                          </div>
                        </div>
                        
-                       {/* Magenta */}
-                       <div className="flex flex-col items-center min-w-0 flex-shrink-0">
-                         <div 
-                           className="w-6 sm:w-7 lg:w-8 bg-pink-400 rounded-t"
-                           style={{ 
-                             height: `${Math.max(6, (fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.magenta * fc.copies, 0) / getTotalInkConsumption()) * 40)}px` 
-                           }}
-                         ></div>
-                         <div className="text-xs text-center mt-1 max-w-16">
-                           <div className="font-medium text-xs leading-tight">Пурпурний</div>
-                           <div className="text-gray-600 text-xs">
-                             {fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.magenta * fc.copies, 0).toFixed(1)} мл
+                       {/* Вторая строка на мобильных - последние 2 цвета */}
+                       <div className="flex items-end gap-2 lg:gap-3 w-full justify-center sm:justify-start sm:w-auto">
+                         {/* Black */}
+                         <div className="flex flex-col items-center">
+                           <div 
+                             className="w-6 sm:w-7 lg:w-8 bg-gray-800 rounded-t"
+                             style={{ 
+                               height: `${Math.max(6, (fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.black * fc.copies, 0) / getTotalInkConsumption()) * 40)}px` 
+                             }}
+                           ></div>
+                           <div className="text-xs text-center mt-1 max-w-16">
+                             <div className="font-medium text-xs leading-tight">Чорний</div>
+                             <div className="text-gray-600 text-xs">
+                               {fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.black * fc.copies, 0).toFixed(1)} мл
+                             </div>
                            </div>
                          </div>
-                       </div>
-                       
-                       {/* Yellow */}
-                       <div className="flex flex-col items-center min-w-0 flex-shrink-0">
-                         <div 
-                           className="w-6 sm:w-7 lg:w-8 bg-yellow-400 rounded-t"
-                           style={{ 
-                             height: `${Math.max(6, (fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.yellow * fc.copies, 0) / getTotalInkConsumption()) * 40)}px` 
-                           }}
-                         ></div>
-                         <div className="text-xs text-center mt-1 max-w-16">
-                           <div className="font-medium text-xs leading-tight">Жовтий</div>
-                           <div className="text-gray-600 text-xs">
-                             {fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.yellow * fc.copies, 0).toFixed(1)} мл
-                           </div>
-                         </div>
-                       </div>
-                       
-                       {/* Black */}
-                       <div className="flex flex-col items-center min-w-0 flex-shrink-0">
-                         <div 
-                           className="w-6 sm:w-7 lg:w-8 bg-gray-800 rounded-t"
-                           style={{ 
-                             height: `${Math.max(6, (fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.black * fc.copies, 0) / getTotalInkConsumption()) * 40)}px` 
-                           }}
-                         ></div>
-                         <div className="text-xs text-center mt-1 max-w-16">
-                           <div className="font-medium text-xs leading-tight">Чорний</div>
-                           <div className="text-gray-600 text-xs">
-                             {fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.black * fc.copies, 0).toFixed(1)} мл
-                           </div>
-                         </div>
-                       </div>
 
-                       {/* White */}
-                       <div className="flex flex-col items-center min-w-0 flex-shrink-0">
-                         <div 
-                           className="w-6 sm:w-7 lg:w-8 bg-gray-300 border border-gray-400 rounded-t"
-                           style={{ 
-                             height: `${Math.max(6, (fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.white * fc.copies, 0) / getTotalInkConsumption()) * 40)}px` 
-                           }}
-                         ></div>
-                         <div className="text-xs text-center mt-1 max-w-16">
-                           <div className="font-medium text-xs leading-tight">Білий</div>
-                           <div className="text-gray-600 text-xs">
-                             {fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.white * fc.copies, 0).toFixed(1)} мл
+                         {/* White */}
+                         <div className="flex flex-col items-center">
+                           <div 
+                             className="w-6 sm:w-7 lg:w-8 bg-gray-300 border border-gray-400 rounded-t"
+                             style={{ 
+                               height: `${Math.max(6, (fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.white * fc.copies, 0) / getTotalInkConsumption()) * 40)}px` 
+                             }}
+                           ></div>
+                           <div className="text-xs text-center mt-1 max-w-16">
+                             <div className="font-medium text-xs leading-tight">Білий</div>
+                             <div className="text-gray-600 text-xs">
+                               {fileCopies.reduce((sum, fc) => sum + fc.inkConsumption.white * fc.copies, 0).toFixed(1)} мл
+                             </div>
                            </div>
                          </div>
                        </div>
