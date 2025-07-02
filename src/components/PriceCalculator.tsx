@@ -11,10 +11,15 @@ import * as pdfjsLib from 'pdfjs-dist';
 import DTFInkCalculator, { ColorAnalysis, InkUsage } from '@/utils/dtfInkCalculator';
 import { FileAnalyzer, FileAnalysisResult } from '@/utils/fileAnalyzer';
 
-// Настройка worker для PDF.js
+// Настройка worker для PDF.js с fallback
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.js';
-  console.log('PDF.js worker настроен на:', pdfjsLib.GlobalWorkerOptions.workerSrc);
+  try {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+    console.log('PDF.js worker настроен на локальный файл:', pdfjsLib.GlobalWorkerOptions.workerSrc);
+  } catch (error) {
+    console.warn('Не удалось настроить worker, используем fallback без worker');
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+  }
 }
 
 interface PriceCalculatorProps {
@@ -97,7 +102,10 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
         console.log('ArrayBuffer получен, размер:', arrayBuffer.byteLength);
         
         const loadingTask = pdfjsLib.getDocument({ 
-          data: arrayBuffer
+          data: arrayBuffer,
+          useWorkerFetch: false,
+          isEvalSupported: false,
+          useSystemFonts: true
         });
         
         console.log('Загружаем PDF документ...');
