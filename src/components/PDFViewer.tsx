@@ -10,8 +10,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, scale = 1.5 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 
-      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.js';
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
     const renderPDF = async () => {
       if (!canvasRef.current) return;
