@@ -454,9 +454,36 @@ const Index = () => {
                   <span className="text-gray-700 font-medium">Персональний сервіс</span>
                 </div>
               </div>
+              </div>
+            </div>
+
+            {/* Block 4 - Text Left, Image Right */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+              <div className="space-y-6 animate-fade-in lg:order-1">
+                <h4 className="text-2xl lg:text-3xl font-bold text-gray-900">
+                  Щоденна робота
+                </h4>
+                <p className="text-gray-600 text-lg leading-relaxed">
+                  Ми працюємо кожного дня, щоб забезпечити швидку обробку ваших замовлень. 
+                  Відправки здійснюємо день в день при оформленні замовлення до 12:00. 
+                  Наша команда завжди готова обробити ваше замовлення якнайшвидше.
+                </p>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <Send className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <span className="text-gray-700 font-medium">Відправка день в день</span>
+                </div>
+              </div>
+              <div className="animate-fade-in lg:order-2">
+                <img 
+                  src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=600&h=400&fit=crop&crop=center" 
+                  alt="Щоденна робота та швидкі відправки" 
+                  className="w-full h-80 lg:h-96 object-cover rounded-2xl shadow-lg hover-scale"
+                />
+              </div>
             </div>
           </div>
-        </div>
       </section>
 
             {/* Features - показуємо завжди */}
