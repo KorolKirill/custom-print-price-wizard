@@ -93,6 +93,15 @@ const Index = () => {
         </div>
       </header>
 
+      {/* Announcement Banner */}
+      <div className="bg-green-50 border-b border-green-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <p className="text-center text-green-700 font-medium">
+            Встигніть замовити до 12.00, щоб отримати відправку сьогодні.
+          </p>
+        </div>
+      </div>
+
       {/* Hero Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
@@ -124,10 +133,6 @@ const Index = () => {
             ))}
           </div>
           
-          {/* Green text below progress steps */}
-          <p className="text-green-600 font-medium mb-6">
-            Встигніть замовити до 12.00, щоб отримати відправку сьогодні.
-          </p>
         </div>
       </section>
 
