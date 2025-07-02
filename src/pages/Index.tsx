@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Upload, Calculator, ShoppingCart, CheckCircle, Image as ImageIcon, Scroll, ArrowLeft, MessageCircle, Instagram } from "lucide-react";
+import { Upload, Calculator, ShoppingCart, CheckCircle, Image as ImageIcon, Scroll, ArrowLeft, Send, Instagram } from "lucide-react";
 import FileUploader from "@/components/FileUploader";
 import PriceCalculator from "@/components/PriceCalculator";
 import OrderForm from "@/components/OrderForm";
@@ -77,7 +77,7 @@ const Index = () => {
                   rel="noopener noreferrer"
                   className="text-gray-600 hover:text-orange-600 transition-colors"
                 >
-                  <MessageCircle className="w-6 h-6" />
+                  <Send className="w-6 h-6" />
                 </a>
                 <a 
                   href="https://www.instagram.com/futboss.ua/" 
