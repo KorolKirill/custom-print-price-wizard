@@ -7,12 +7,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Calculator, ArrowRight, FileImage, FileText, Image as ImageIcon, Minus, Plus, Info } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import * as pdfjsLib from 'pdfjs-dist';
 import DTFInkCalculator, { ColorAnalysis, InkUsage } from '@/utils/dtfInkCalculator';
 import { FileAnalyzer, FileAnalysisResult } from '@/utils/fileAnalyzer';
-
-// Настройка worker (обязательно!)
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 interface PriceCalculatorProps {
   files: File[];
@@ -82,36 +78,9 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
     }
 
     if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
-      // Перевіряємо розмір файлу - якщо більше 10MB, не генеруємо попередній перегляд
-      if (fileSizeMB > 10) {
-        return { file, preview: '', type: 'pdf', pageCount: 0 };
-      }
-      
-      try {
-        const pdf = await pdfjsLib.getDocument(URL.createObjectURL(file)).promise;
-        const page = await pdf.getPage(1);
-        
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d')!;
-        
-        const viewport = page.getViewport({ scale: 1.5 });
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-        
-        const renderContext = {
-          canvasContext: context,
-          viewport: viewport
-        };
-        
-        await page.render(renderContext).promise;
-        const preview = canvas.toDataURL('image/jpeg', 0.8);
-        
-        return { file, preview, type: 'pdf', pageCount: pdf.numPages };
-        
-      } catch (error) {
-        console.error('Error rendering PDF:', error);
-        return { file, preview: '', type: 'pdf', pageCount: 0 };
-      }
+      // Для PDF создаем URL для встроенного viewer браузера
+      const pdfUrl = URL.createObjectURL(file);
+      return { file, preview: pdfUrl, type: 'pdf', pageCount: 1 };
     }
 
     if (fileName.endsWith('.psd')) {
@@ -393,28 +362,19 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
         {type === 'pdf' && (
           <div className="relative w-full h-full">
             {preview ? (
-              <>
-                <img 
-                  src={preview} 
-                  alt={`${file.name} - сторінка 1`}
-                  className="max-w-full max-h-full object-contain rounded-lg mx-auto"
-                />
-                {pageCount && pageCount > 1 && (
-                  <div className="absolute top-2 right-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs">
-                    {pageCount} стор.
-                  </div>
-                )}
-              </>
+              <iframe 
+                src={preview}
+                className="w-full h-full rounded-lg"
+                title={`${file.name} preview`}
+              />
             ) : (
               <div className="flex flex-col items-center justify-center text-gray-500 p-4 text-center">
                 <FileText className="w-12 h-12 mb-2" />
                 <span className="text-sm font-medium">PDF файл</span>
-                {fileSizeMB > 10 && (
-                  <span className="text-xs text-orange-600 mt-1">
-                    Файл надто великий для попереднього перегляду<br />
-                    ({fileSizeMB.toFixed(1)} MB &gt; 10 MB)
-                  </span>
-                )}
+                <span className="text-xs text-orange-600 mt-1">
+                  Файл надто великий для попереднього перегляду<br />
+                  ({fileSizeMB.toFixed(1)} MB &gt; 10 MB)
+                </span>
               </div>
             )}
           </div>
