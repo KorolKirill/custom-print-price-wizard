@@ -432,8 +432,8 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
   };
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <Card>
+    <div className="w-full">
+      <Card className="max-w-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calculator className="w-6 h-6" />
@@ -448,8 +448,9 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
             )}
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
+        <CardContent className="px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
             {/* Ліва колонка - інформація про файли */}
             <div className="space-y-4 lg:space-y-6">
                {/* Інформація про файли */}
@@ -860,6 +861,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                <ArrowRight className="ml-2 w-4 h-4" />
              </Button>
            )}
+          </div>
         </CardContent>
       </Card>
     </div>
