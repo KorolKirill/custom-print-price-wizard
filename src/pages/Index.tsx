@@ -199,8 +199,8 @@ const Index = () => {
             Ми надамо точний розрахунок вартості та виконаємо замовлення з найвищою якістю.
           </p>
           
-          {/* Progress Steps */}
-          <div className="flex justify-center items-center space-x-2 sm:space-x-4 lg:space-x-6 mb-6 overflow-x-auto px-4">
+          {/* Progress Steps - скрыто на мобильных */}
+          <div className="hidden md:flex justify-center items-center space-x-2 sm:space-x-4 lg:space-x-6 mb-6 overflow-x-auto px-4">
             {[
               { step: 1, icon: CheckCircle, label: "Тип друку", active: currentStep >= 1 },
               { step: 2, icon: Upload, label: "Завантаження файлів", active: currentStep >= 2 },
