@@ -200,7 +200,7 @@ const Index = () => {
           </p>
           
           {/* Progress Steps */}
-          <div className="flex justify-center items-center space-x-6 mb-6">
+          <div className="flex justify-center items-center space-x-2 sm:space-x-4 lg:space-x-6 mb-6 overflow-x-auto px-4">
             {[
               { step: 1, icon: CheckCircle, label: "Тип друку", active: currentStep >= 1 },
               { step: 2, icon: Upload, label: "Завантаження файлів", active: currentStep >= 2 },
@@ -208,13 +208,13 @@ const Index = () => {
               { step: 4, icon: ShoppingCart, label: "Оформлення замовлення", active: currentStep >= 4 },
               { step: 5, icon: CheckCircle, label: "Готово", active: currentStep >= 5 },
             ].map(({ step, icon: Icon, label, active }) => (
-              <div key={step} className={`flex flex-col items-center ${active ? 'text-orange-600' : 'text-gray-400'}`}>
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
+              <div key={step} className={`flex flex-col items-center min-w-0 flex-shrink-0 ${active ? 'text-orange-600' : 'text-gray-400'}`}>
+                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center mb-2 ${
                   active ? 'bg-orange-600 text-white' : 'bg-gray-200'
                 }`}>
-                  <Icon size={16} />
+                  <Icon size={14} className="sm:w-4 sm:h-4" />
                 </div>
-                <span className="text-xs font-medium">{label}</span>
+                <span className="text-xs font-medium text-center leading-tight max-w-16 sm:max-w-20">{label}</span>
               </div>
             ))}
           </div>
@@ -359,22 +359,22 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Features - показуємо завжди */}
-      <section className="py-16 bg-white">
+            {/* Features - показуємо завжди */}
+      <section className="py-12 lg:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h3 className="text-3xl font-bold text-center text-gray-900 mb-12">
-            Чому обирають PrintCraft Studio?
+          <h3 className="text-2xl lg:text-3xl font-bold text-center text-gray-900 mb-8 lg:mb-12">
+            Чому обирають FUTBOSS?
           </h3>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
             <Card className="text-center hover:shadow-lg transition-shadow">
-              <CardHeader>
+              <CardHeader className="pb-4">
                 <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <Upload className="w-6 h-6 text-orange-600" />
                 </div>
-                <CardTitle>Просте завантаження</CardTitle>
+                <CardTitle className="text-lg lg:text-xl">Просте завантаження</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-sm lg:text-base">
                   Підтримка PDF, PSD файлів та окремих зображень. 
                   Просто перетягніть файли в область завантаження.
                 </p>
@@ -382,14 +382,14 @@ const Index = () => {
             </Card>
 
             <Card className="text-center hover:shadow-lg transition-shadow">
-              <CardHeader>
+              <CardHeader className="pb-4">
                 <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <Calculator className="w-6 h-6 text-gray-600" />
                 </div>
-                <CardTitle>Точний розрахунок</CardTitle>
+                <CardTitle className="text-lg lg:text-xl">Точний розрахунок</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-sm lg:text-base">
                   Автоматичний розрахунок вартості на основі розмірів, 
                   кількості та складності дизайну.
                 </p>
@@ -397,14 +397,14 @@ const Index = () => {
             </Card>
 
             <Card className="text-center hover:shadow-lg transition-shadow">
-              <CardHeader>
+              <CardHeader className="pb-4">
                 <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <CheckCircle className="w-6 h-6 text-orange-600" />
                 </div>
-                <CardTitle>Висока якість</CardTitle>
+                <CardTitle className="text-lg lg:text-xl">Висока якість</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-sm lg:text-base">
                   Використовуємо сучасне DTF обладнання для отримання 
                   яскравих та довговічних принтів.
                 </p>

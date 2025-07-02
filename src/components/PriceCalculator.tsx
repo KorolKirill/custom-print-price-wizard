@@ -449,73 +449,75 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid lg:grid-cols-2 gap-8">
+          <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
             {/* Ліва колонка - інформація про файли */}
-            <div className="space-y-6">
-              {/* Інформація про файли */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Завантажені файли:</h3>
-                <div className="space-y-3">
-                  {files.map((file, index) => (
-                    <div 
-                      key={index} 
-                      className={`p-4 rounded-lg cursor-pointer transition-colors ${
-                        previewFileIndex === index 
-                          ? "bg-blue-100 border-2 border-blue-300" 
-                          : selectedFileIndex === index
-                            ? "bg-orange-100 border-2 border-orange-300"
-                            : "bg-gray-50 hover:bg-gray-100"
-                      }`}
-                      onClick={() => handleFileSelect(index)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          {file.type.startsWith('image/') ? (
-                            <ImageIcon className="w-5 h-5 text-blue-500" />
-                          ) : file.name.toLowerCase().endsWith('.pdf') ? (
-                            <FileText className="w-5 h-5 text-red-500" />
-                          ) : (
-                            <FileImage className="w-5 h-5 text-purple-500" />
-                          )}
-                          <div>
-                            <p className="font-medium">{file.name}</p>
-                            <p className="text-sm text-gray-500">
-                              {(file.size / 1024 / 1024).toFixed(2)} MB
-                              {fileCopies[index] && (
-                                <span className="ml-2 text-green-600">
-                                  {fileCopies[index].width.toFixed(1)}×{fileCopies[index].height.toFixed(1)} см
-                                </span>
-                              )}
-                            </p>
-                          </div>
-                        </div>
-                        {fileCopies[index] && (
-                          <div className="text-right">
-                            <p className="text-sm text-gray-600">Копій: {fileCopies[index].copies}</p>
-                            <p className="text-xs text-blue-600">
-                              {((fileCopies[index].inkConsumption.cyan + fileCopies[index].inkConsumption.magenta + fileCopies[index].inkConsumption.yellow + fileCopies[index].inkConsumption.black + fileCopies[index].inkConsumption.white) * fileCopies[index].copies).toFixed(1)} мл
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                      {previewFileIndex === index && (
-                        <div className="mt-2 text-sm text-blue-600">
-                          👁 Відображається у попередньому перегляді
-                        </div>
-                      )}
-                      {selectedFileIndex === index && previewFileIndex !== index && (
-                        <div className="mt-2 text-sm text-orange-600">
-                          ← Обрано для налаштування
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
+            <div className="space-y-4 lg:space-y-6">
+               {/* Інформація про файли */}
+               <div className="space-y-4">
+                 <h3 className="text-lg font-semibold">Завантажені файли:</h3>
+                 <div className="space-y-3">
+                   {files.map((file, index) => (
+                     <div 
+                       key={index} 
+                       className={`p-3 lg:p-4 rounded-lg cursor-pointer transition-colors ${
+                         previewFileIndex === index 
+                           ? "bg-blue-100 border-2 border-blue-300" 
+                           : selectedFileIndex === index
+                             ? "bg-orange-100 border-2 border-orange-300"
+                             : "bg-gray-50 hover:bg-gray-100"
+                       }`}
+                       onClick={() => handleFileSelect(index)}
+                     >
+                       <div className="flex items-start justify-between gap-3">
+                         <div className="flex items-start gap-3 min-w-0 flex-1">
+                           <div className="flex-shrink-0 mt-0.5">
+                             {file.type.startsWith('image/') ? (
+                               <ImageIcon className="w-4 h-4 lg:w-5 lg:h-5 text-blue-500" />
+                             ) : file.name.toLowerCase().endsWith('.pdf') ? (
+                               <FileText className="w-4 h-4 lg:w-5 lg:h-5 text-red-500" />
+                             ) : (
+                               <FileImage className="w-4 h-4 lg:w-5 lg:h-5 text-purple-500" />
+                             )}
+                           </div>
+                           <div className="min-w-0 flex-1">
+                             <p className="font-medium text-sm lg:text-base truncate">{file.name}</p>
+                             <div className="text-xs lg:text-sm text-gray-500 space-y-1">
+                               <div>{(file.size / 1024 / 1024).toFixed(2)} MB</div>
+                               {fileCopies[index] && (
+                                 <div className="text-green-600">
+                                   {fileCopies[index].width.toFixed(1)}×{fileCopies[index].height.toFixed(1)} см
+                                 </div>
+                               )}
+                             </div>
+                           </div>
+                         </div>
+                         {fileCopies[index] && (
+                           <div className="text-right flex-shrink-0">
+                             <p className="text-xs lg:text-sm text-gray-600">Копій: {fileCopies[index].copies}</p>
+                             <p className="text-xs text-blue-600">
+                               {((fileCopies[index].inkConsumption.cyan + fileCopies[index].inkConsumption.magenta + fileCopies[index].inkConsumption.yellow + fileCopies[index].inkConsumption.black + fileCopies[index].inkConsumption.white) * fileCopies[index].copies).toFixed(1)} мл
+                             </p>
+                           </div>
+                         )}
+                       </div>
+                       {previewFileIndex === index && (
+                         <div className="mt-2 text-xs lg:text-sm text-blue-600">
+                           👁 Відображається у попередньому перегляді
+                         </div>
+                       )}
+                       {selectedFileIndex === index && previewFileIndex !== index && (
+                         <div className="mt-2 text-xs lg:text-sm text-orange-600">
+                           ← Обрано для налаштування
+                         </div>
+                       )}
+                     </div>
+                   ))}
+                 </div>
+               </div>
             </div>
 
             {/* Права колонка - попередній перегляд файлів */}
-            <div className="space-y-4">
+            <div className="space-y-4 order-first lg:order-last">
               <h3 className="text-lg font-semibold">Попередній перегляд файлу:</h3>
               
               {isLoading ? (
@@ -548,37 +550,39 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Кількість копій */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Кількість копій
-                    </label>
-                    <div className="flex items-center gap-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => updateCopies(selectedFileIndex, fileCopies[selectedFileIndex].copies - 1)}
-                        disabled={fileCopies[selectedFileIndex].copies <= 1}
-                      >
-                        <Minus className="w-4 h-4" />
-                      </Button>
-                      <Input
-                        type="number"
-                        min="1"
-                        value={fileCopies[selectedFileIndex].copies}
-                        onChange={(e) => updateCopies(selectedFileIndex, parseInt(e.target.value) || 1)}
-                        className="w-20 text-center"
-                      />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => updateCopies(selectedFileIndex, fileCopies[selectedFileIndex].copies + 1)}
-                      >
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
+                 <div className="grid grid-cols-1 gap-6">
+                   {/* Кількість копій */}
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-2">
+                       Кількість копій
+                     </label>
+                     <div className="flex items-center justify-center gap-3">
+                       <Button
+                         variant="outline"
+                         size="sm"
+                         onClick={() => updateCopies(selectedFileIndex, fileCopies[selectedFileIndex].copies - 1)}
+                         disabled={fileCopies[selectedFileIndex].copies <= 1}
+                         className="h-10 w-10"
+                       >
+                         <Minus className="w-4 h-4" />
+                       </Button>
+                       <Input
+                         type="number"
+                         min="1"
+                         value={fileCopies[selectedFileIndex].copies}
+                         onChange={(e) => updateCopies(selectedFileIndex, parseInt(e.target.value) || 1)}
+                         className="w-20 text-center h-10"
+                       />
+                       <Button
+                         variant="outline"
+                         size="sm"
+                         onClick={() => updateCopies(selectedFileIndex, fileCopies[selectedFileIndex].copies + 1)}
+                         className="h-10 w-10"
+                       >
+                         <Plus className="w-4 h-4" />
+                       </Button>
+                     </div>
+                   </div>
 
                   {/* Розмір файлу */}
                   <div>
