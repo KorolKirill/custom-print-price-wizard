@@ -513,60 +513,6 @@ const Index = () => {
         </div>
       </section>
 
-            {/* Features - показуємо завжди */}
-      <section className="py-12 lg:py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h3 className="text-2xl lg:text-3xl font-bold text-center text-gray-900 mb-8 lg:mb-12">
-            Чому обирають FUTBOSS?
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-            <Card className="text-center hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-4">
-                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Upload className="w-6 h-6 text-orange-600" />
-                </div>
-                <CardTitle className="text-lg lg:text-xl">Просте завантаження</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 text-sm lg:text-base">
-                  Підтримка PDF, PSD файлів та окремих зображень. 
-                  Просто перетягніть файли в область завантаження.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-4">
-                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Calculator className="w-6 h-6 text-gray-600" />
-                </div>
-                <CardTitle className="text-lg lg:text-xl">Точний розрахунок</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 text-sm lg:text-base">
-                  Автоматичний розрахунок вартості на основі розмірів, 
-                  кількості та складності дизайну.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-4">
-                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="w-6 h-6 text-orange-600" />
-                </div>
-                <CardTitle className="text-lg lg:text-xl">Висока якість</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 text-sm lg:text-base">
-                  Використовуємо сучасне DTF обладнання для отримання 
-                  яскравих та довговічних принтів.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
       
       {/* Footer */}
       <Footer />
