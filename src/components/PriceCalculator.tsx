@@ -14,6 +14,7 @@ import { FileAnalyzer, FileAnalysisResult } from '@/utils/fileAnalyzer';
 // Настройка worker для PDF.js
 if (typeof window !== 'undefined') {
   pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+  console.log('PDF.js worker настроен на:', pdfjsLib.GlobalWorkerOptions.workerSrc);
 }
 
 interface PriceCalculatorProps {
@@ -90,43 +91,55 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
       }
       
       try {
+        console.log('Начинаем обработку PDF файла:', file.name, 'размер:', fileSizeMB.toFixed(2), 'MB');
+        
         const arrayBuffer = await file.arrayBuffer();
+        console.log('ArrayBuffer получен, размер:', arrayBuffer.byteLength);
+        
         const loadingTask = pdfjsLib.getDocument({ 
-          data: arrayBuffer,
-          cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/cmaps/',
-          cMapPacked: true
+          data: arrayBuffer
         });
         
+        console.log('Загружаем PDF документ...');
         const pdf = await loadingTask.promise;
+        console.log('PDF загружен успешно, страниц:', pdf.numPages);
+        
         const page = await pdf.getPage(1);
+        console.log('Первая страница получена');
         
         const scale = 1.2;
         const viewport = page.getViewport({ scale });
+        console.log('Viewport создан:', viewport.width, 'x', viewport.height);
         
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
         
         if (!context) {
-          console.error('Не вдалося отримати контекст canvas');
+          console.error('Не удалось получить контекст canvas');
           return { file, preview: '', type: 'pdf', pageCount: pdf.numPages };
         }
         
         canvas.height = viewport.height;
         canvas.width = viewport.width;
+        console.log('Canvas настроен:', canvas.width, 'x', canvas.height);
 
         const renderContext = {
           canvasContext: context,
           viewport: viewport,
         };
 
+        console.log('Начинаем рендеринг страницы...');
         await page.render(renderContext).promise;
+        console.log('Страница отрендерена успешно');
         
         const preview = canvas.toDataURL('image/jpeg', 0.8);
+        console.log('DataURL создан, длина:', preview.length);
+        
         return { file, preview, type: 'pdf', pageCount: pdf.numPages };
         
       } catch (error) {
-        console.error('Помилка при обробці PDF:', error);
-        // Возвращаем информацию о файле без превью
+        console.error('Ошибка при обработке PDF:', error);
+        console.error('Детали ошибки:', error.message, error.stack);
         return { file, preview: '', type: 'pdf', pageCount: 0 };
       }
     }
