@@ -1,8 +1,9 @@
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Настройка worker для PDF.js
+// Настройка PDF.js без worker для стабильной работы
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+  console.log('PDF.js в fileAnalyzer настроен без worker');
 }
 
 export interface FileDimensions {
