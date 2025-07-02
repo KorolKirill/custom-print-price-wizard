@@ -163,10 +163,10 @@ const FileUploader = ({ onFilesUploaded, printType, maxFiles }: FileUploaderProp
               ))}
             </div>
             
-            <div className="mt-6 text-center">
+            <div className="mt-6 text-center px-4">
               <Button 
                 onClick={handleContinue}
-                className="bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600"
+                className="bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 w-full max-w-xs"
                 size="lg"
               >
                 Продовжити до розрахунку вартості
