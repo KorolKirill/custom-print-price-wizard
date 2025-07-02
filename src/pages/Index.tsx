@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Upload, Calculator, ShoppingCart, CheckCircle, Image as ImageIcon, Scroll, ArrowLeft, Send, Instagram } from "lucide-react";
+import { formatInTimeZone } from "date-fns-tz";
 import FileUploader from "@/components/FileUploader";
 import PriceCalculator from "@/components/PriceCalculator";
 import OrderForm from "@/components/OrderForm";
@@ -13,6 +14,22 @@ const Index = () => {
   const [printType, setPrintType] = useState(""); // "single" або "roll"
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [calculatedPrice, setCalculatedPrice] = useState(0);
+  const [showAnnouncementBanner, setShowAnnouncementBanner] = useState(true);
+
+  // Check if it's past 12:00 in Ukraine timezone
+  useEffect(() => {
+    const checkTime = () => {
+      const ukraineTime = formatInTimeZone(new Date(), 'Europe/Kiev', 'HH');
+      const currentHour = parseInt(ukraineTime);
+      setShowAnnouncementBanner(currentHour < 12);
+    };
+
+    checkTime();
+    // Check every minute
+    const interval = setInterval(checkTime, 60000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handlePrintTypeSelected = (type: string) => {
     setPrintType(type);
@@ -94,13 +111,15 @@ const Index = () => {
       </header>
 
       {/* Announcement Banner */}
-      <div className="bg-green-50 border-b border-green-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <p className="text-center text-green-700 font-medium">
-            Встигніть замовити до 12.00, щоб отримати відправку сьогодні.
-          </p>
+      {showAnnouncementBanner && (
+        <div className="bg-green-50 border-b border-green-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <p className="text-center text-green-700 font-medium">
+              Встигніть замовити до 12.00, щоб отримати відправку сьогодні.
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Hero Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
