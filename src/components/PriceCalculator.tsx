@@ -867,7 +867,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
                className="w-full bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 mt-4 lg:mt-6 text-sm lg:text-base"
                size="lg"
              >
-               Продовжити до оформлення замовлення
+               До оформлення замовлення
                <ArrowRight className="ml-2 w-4 h-4" />
              </Button>
            )}
