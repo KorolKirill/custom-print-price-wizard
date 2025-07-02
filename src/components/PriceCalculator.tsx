@@ -75,6 +75,10 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
     const fileSizeMB = file.size / 1024 / 1024;
 
     if (fileType.startsWith('image/')) {
+      // Не показываем превью для файлов больше 10MB
+      if (fileSizeMB > 10) {
+        return { file, preview: '', type: 'image' };
+      }
       const preview = URL.createObjectURL(file);
       return { file, preview, type: 'image' };
     }
@@ -375,6 +379,19 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
           />
         )}
         
+        {type === 'image' && !preview && (
+          <div className="flex flex-col items-center justify-center text-gray-500 p-4 text-center">
+            <ImageIcon className="w-12 h-12 mb-2" />
+            <span className="text-sm font-medium">Зображення</span>
+            {fileSizeMB > 10 && (
+              <span className="text-xs text-orange-600 mt-1">
+                Файл надто великий для попереднього перегляду<br />
+                ({fileSizeMB.toFixed(1)} MB &gt; 10 MB)
+              </span>
+            )}
+          </div>
+        )}
+        
         {type === 'pdf' && (
           <div className="relative w-full h-full">
             {preview ? (
@@ -409,13 +426,6 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
           <div className="flex flex-col items-center justify-center text-gray-500">
             <FileImage className="w-12 h-12 mb-2" />
             <span className="text-sm font-medium">PSD файл</span>
-          </div>
-        )}
-        
-        {!preview && type !== 'psd' && type !== 'pdf' && (
-          <div className="flex flex-col items-center justify-center text-gray-500">
-            <FileText className="w-12 h-12 mb-2" />
-            <span className="text-sm">Не вдалося завантажити</span>
           </div>
         )}
         
