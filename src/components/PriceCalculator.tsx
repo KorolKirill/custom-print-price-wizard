@@ -78,9 +78,10 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
     }
 
     if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
-      // Для PDF создаем URL для встроенного viewer браузера
+      // Для PDF создаем URL для встроенного viewer браузера с параметром для принудительного просмотра
       const pdfUrl = URL.createObjectURL(file);
-      return { file, preview: pdfUrl, type: 'pdf', pageCount: 1 };
+      const pdfUrlWithParams = `${pdfUrl}#view=FitH`;
+      return { file, preview: pdfUrlWithParams, type: 'pdf', pageCount: 1 };
     }
 
     if (fileName.endsWith('.psd')) {
