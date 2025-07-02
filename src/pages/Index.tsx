@@ -223,7 +223,7 @@ const Index = () => {
       </section>
 
       {/* Main Content */}
-      <section className="py-8 px-4 sm:px-6 lg:px-8 min-h-[60vh]">
+      <section className="py-4 lg:py-8 px-4 sm:px-6 lg:px-8 min-h-[60vh]">
         <div className="max-w-4xl mx-auto">
           {/* Back Button */}
           {currentStep > 1 && (
