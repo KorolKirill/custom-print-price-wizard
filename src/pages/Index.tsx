@@ -360,6 +360,106 @@ const Index = () => {
         </div>
       </section>
 
+      {/* About Us Section */}
+      <section className="py-12 lg:py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              Про нас
+            </h3>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Ми — команда професіоналів, що спеціалізується на DTF-друку нового покоління
+            </p>
+          </div>
+
+          <div className="space-y-16 lg:space-y-24">
+            {/* Block 1 - Image Left, Text Right */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+              <div className="animate-fade-in">
+                <img 
+                  src="https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=600&h=400&fit=crop&crop=center" 
+                  alt="Наша команда за роботою" 
+                  className="w-full h-80 lg:h-96 object-cover rounded-2xl shadow-lg hover-scale"
+                />
+              </div>
+              <div className="space-y-6 animate-fade-in">
+                <h4 className="text-2xl lg:text-3xl font-bold text-gray-900">
+                  Досвід та професіоналізм
+                </h4>
+                <p className="text-gray-600 text-lg leading-relaxed">
+                  За роки роботи ми накопичили величезний досвід у сфері DTF-друку. 
+                  Наша команда постійно вдосконалює свої навички та слідкує за новітніми 
+                  технологіями у галузі. Ми знаємо, як досягти найкращого результату для 
+                  кожного проекту, незалежно від його складності.
+                </p>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <CheckCircle className="w-6 h-6 text-orange-600" />
+                  </div>
+                  <span className="text-gray-700 font-medium">Понад 5 років досвіду</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Block 2 - Text Left, Image Right */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+              <div className="space-y-6 animate-fade-in lg:order-1">
+                <h4 className="text-2xl lg:text-3xl font-bold text-gray-900">
+                  Сучасне обладнання
+                </h4>
+                <p className="text-gray-600 text-lg leading-relaxed">
+                  Використовуємо найновіше обладнання для DTF-друку, що дозволяє нам 
+                  гарантувати високу якість та швидкість виконання замовлень. Регулярно 
+                  оновлюємо наш парк техніки, щоб завжди відповідати найвищим стандартам 
+                  галузі та задовольняти потреби наших клієнтів.
+                </p>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Calculator className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <span className="text-gray-700 font-medium">Преміум обладнання</span>
+                </div>
+              </div>
+              <div className="animate-fade-in lg:order-2">
+                <img 
+                  src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=600&h=400&fit=crop&crop=center" 
+                  alt="Сучасне обладнання для друку" 
+                  className="w-full h-80 lg:h-96 object-cover rounded-2xl shadow-lg hover-scale"
+                />
+              </div>
+            </div>
+
+            {/* Block 3 - Image Left, Text Right */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+              <div className="animate-fade-in">
+                <img 
+                  src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600&h=400&fit=crop&crop=center" 
+                  alt="Індивідуальний підхід до кожного клієнта" 
+                  className="w-full h-80 lg:h-96 object-cover rounded-2xl shadow-lg hover-scale"
+                />
+              </div>
+              <div className="space-y-6 animate-fade-in">
+                <h4 className="text-2xl lg:text-3xl font-bold text-gray-900">
+                  Індивідуальний підхід
+                </h4>
+                <p className="text-gray-600 text-lg leading-relaxed">
+                  Кожен клієнт для нас унікальний. Ми уважно вислухаємо ваші побажання 
+                  та надамо професійні поради щодо оптимального рішення. Наша мета — 
+                  не просто виконати замовлення, а створити довгострокове партнерство, 
+                  засноване на довірі та взаємній повазі.
+                </p>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <CheckCircle className="w-6 h-6 text-green-600" />
+                  </div>
+                  <span className="text-gray-700 font-medium">Персональний сервіс</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
             {/* Features - показуємо завжди */}
       <section className="py-12 lg:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
