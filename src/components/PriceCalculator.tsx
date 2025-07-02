@@ -9,6 +9,7 @@ import { Calculator, ArrowRight, FileImage, FileText, Image as ImageIcon, Minus,
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import DTFInkCalculator, { ColorAnalysis, InkUsage } from '@/utils/dtfInkCalculator';
 import { FileAnalyzer, FileAnalysisResult } from '@/utils/fileAnalyzer';
+import PDFViewer from './PDFViewer';
 
 interface PriceCalculatorProps {
   files: File[];
@@ -78,10 +79,9 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
     }
 
     if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
-      // Для PDF создаем URL для встроенного viewer браузера с параметром для принудительного просмотра
+      // Для PDF создаем URL для рендеринга через PDF.js
       const pdfUrl = URL.createObjectURL(file);
-      const pdfUrlWithParams = `${pdfUrl}#view=FitH`;
-      return { file, preview: pdfUrlWithParams, type: 'pdf', pageCount: 1 };
+      return { file, preview: pdfUrl, type: 'pdf', pageCount: 1 };
     }
 
     if (fileName.endsWith('.psd')) {
@@ -363,11 +363,7 @@ const PriceCalculator = ({ files, printType, onPriceCalculated }: PriceCalculato
         {type === 'pdf' && (
           <div className="relative w-full h-full">
             {preview ? (
-              <iframe 
-                src={preview}
-                className="w-full h-full rounded-lg"
-                title={`${file.name} preview`}
-              />
+              <PDFViewer pdfUrl={preview} scale={1.2} />
             ) : (
               <div className="flex flex-col items-center justify-center text-gray-500 p-4 text-center">
                 <FileText className="w-12 h-12 mb-2" />
