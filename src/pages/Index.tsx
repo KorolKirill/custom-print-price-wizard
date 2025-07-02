@@ -83,27 +83,33 @@ const Index = () => {
                 className="h-12 w-auto"
               />
             </div>
-            <div className="flex items-center gap-4">
-              <div className="text-lg font-semibold text-gray-800">
-                +380971162542
+            <div className="flex flex-col items-end gap-2">
+              <div className="flex items-center gap-4">
+                <div className="text-lg font-semibold text-gray-800">
+                  +380971162542
+                </div>
+                <div className="flex items-center gap-3">
+                  <a 
+                    href="https://t.me/managerUUA" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-gray-600 hover:text-orange-600 transition-colors"
+                  >
+                    <Send className="w-6 h-6" />
+                  </a>
+                  <a 
+                    href="https://www.instagram.com/futboss.ua/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-gray-600 hover:text-orange-600 transition-colors"
+                  >
+                    <Instagram className="w-6 h-6" />
+                  </a>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <a 
-                  href="https://t.me/managerUUA" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-gray-600 hover:text-orange-600 transition-colors"
-                >
-                  <Send className="w-6 h-6" />
-                </a>
-                <a 
-                  href="https://www.instagram.com/futboss.ua/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-gray-600 hover:text-orange-600 transition-colors"
-                >
-                  <Instagram className="w-6 h-6" />
-                </a>
+              <div className="text-xs text-gray-500 text-right">
+                <div>Працюємо кожного дня.</div>
+                <div>Пишіть, дзвоніть 9.00-18.00</div>
               </div>
             </div>
           </div>
