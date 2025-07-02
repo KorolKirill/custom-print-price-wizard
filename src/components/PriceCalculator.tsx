@@ -13,7 +13,7 @@ import { FileAnalyzer, FileAnalysisResult } from '@/utils/fileAnalyzer';
 
 // Настройка worker для PDF.js
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.js';
   console.log('PDF.js worker настроен на:', pdfjsLib.GlobalWorkerOptions.workerSrc);
 }
 
